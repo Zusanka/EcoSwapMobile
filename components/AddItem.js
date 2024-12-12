@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, Image, Alert, StyleSheet } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    ScrollView,
+    TouchableOpacity,
+    Alert,
+    StyleSheet,
+} from "react-native";
 import CustomSelect from "./CustomSelect";
 import ImageUploader from "./ImageUploader";
 import BrandSelect from "./BrandSelect";
@@ -8,17 +16,17 @@ import Navbar from "./Navbar";
 const AddItem = ({ navigation }) => {
     const [images, setImages] = useState([]);
     const [title, setTitle] = useState("");
-    const [description, setDescription] = useState(""); 
+    const [description, setDescription] = useState("");
     const [selectedValue, setSelectedValue] = useState(null);
-    const [selectedBrand, setSelectedBrand] = useState(null); 
-    const [selectedCity, setSelectedCity] = useState(null); 
-    const [titleError, setTitleError] = useState(""); 
-    const [errorMessage, setErrorMessage] = useState(""); 
+    const [selectedBrand, setSelectedBrand] = useState(null);
+    const [selectedCity, setSelectedCity] = useState(null);
+    const [titleError, setTitleError] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
     const [selectedCondition, setSelectedCondition] = useState(null);
     const [selectedAdvertisementType, setSelectedAdvertisementType] = useState(null);
-    const [price, setPrice] = useState('');
-    const [email, setEmail] = useState(""); 
-    const [phoneNumber, setPhoneNumber] = useState(""); 
+    const [price, setPrice] = useState("");
+    const [email, setEmail] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
 
     const handleSubmit = () => {
         const formData = {
@@ -32,13 +40,10 @@ const AddItem = ({ navigation }) => {
             phoneNumber,
             city: selectedCity?.label,
             images: images,
-            price
+            price,
         };
 
-        // Save data in local storage (AsyncStorage or similar in a real app)
-        Alert.alert("Success", "Item has been added successfully");
-
-        // Navigate to item details page
+        Alert.alert("Sukces", "Ogłoszenie zostało dodane");
         navigation.navigate("ItemDetails", { formData });
     };
 
@@ -47,33 +52,19 @@ const AddItem = ({ navigation }) => {
     };
 
     const handleRemoveImage = (index) => {
-        Alert.alert("Confirm", "Czy na pewno chcesz usunąć to zdjęcie?", [
-            {
-                text: "Anuluj",
-                style: "cancel",
-            },
+        Alert.alert("Potwierdzenie", "Czy na pewno chcesz usunąć to zdjęcie?", [
+            { text: "Anuluj", style: "cancel" },
             {
                 text: "Usuń",
                 onPress: () => {
                     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
                 },
-                style: "destructive",
             },
         ]);
     };
 
-    const handlePriceChange = (value) => {
-        if (value < 0) {
-            setPrice('');
-        } else {
-            const formattedValue = parseFloat(value).toFixed(2);
-            setPrice(formattedValue);
-        }
-    };
-
     const handleDescriptionChange = (value) => {
         setDescription(value);
-
         if (value.length < 30) {
             setErrorMessage("Opis musi mieć co najmniej 30 znaków.");
         } else if (value.length > 200) {
@@ -85,11 +76,15 @@ const AddItem = ({ navigation }) => {
 
     const handleTitleChange = (value) => {
         setTitle(value);
+        setTitleError(value.length < 1 ? "Tytuł nie może być pusty." : "");
+    };
 
-        if (value.length < 1) {
-            setTitleError("Tytuł nie może być pusty.");
+    const handlePriceChange = (value) => {
+        const numericValue = parseFloat(value);
+        if (numericValue < 0) {
+            setPrice("");
         } else {
-            setTitleError("");
+            setPrice(value);
         }
     };
 
@@ -123,13 +118,13 @@ const AddItem = ({ navigation }) => {
     const brandOptions = [
         { value: "apple", label: "Apple" },
         { value: "samsung", label: "Samsung" },
-        // Additional options...
+        { value: "nike", label: "Nike" },
     ];
 
     const cityOptions = [
         { value: "bialystok", label: "Białystok" },
         { value: "warszawa", label: "Warszawa" },
-        // Additional options...
+        { value: "krakow", label: "Kraków" },
     ];
 
     return (
@@ -160,55 +155,33 @@ const AddItem = ({ navigation }) => {
                             onChangeText={handleDescriptionChange}
                             placeholder="Wpisz opis ogłoszenia tutaj..."
                             multiline
-                            numberOfLines={4}
                         />
                         {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
-                        <Text style={styles.helperText}>{description.length}/200 znaków</Text>
                     </View>
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Kategoria:</Text>
-                        <CustomSelect options={categoryOptions} value={selectedValue} onChange={setSelectedValue} placeholder="Wybierz kategorię" />
-                    </View>
+                    <CustomSelect options={categoryOptions} value={selectedValue} onChange={setSelectedValue} placeholder="Wybierz kategorię" />
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Marka:</Text>
-                        <BrandSelect options={brandOptions} value={selectedBrand} onChange={setSelectedBrand} placeholder="Wybierz markę lub wpisz nową" />
-                    </View>
+                    <BrandSelect options={brandOptions} value={selectedBrand} onChange={setSelectedBrand} placeholder="Wybierz markę" />
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Stan:</Text>
-                        <CustomSelect options={conditionOptions} value={selectedCondition} onChange={setSelectedCondition} placeholder="Wybierz stan przedmiotu" />
-                    </View>
+                    <CustomSelect options={conditionOptions} value={selectedCondition} onChange={setSelectedCondition} placeholder="Wybierz stan przedmiotu" />
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Rodzaj:</Text>
-                        <CustomSelect options={advertisementTypeOptions} value={selectedAdvertisementType} onChange={setSelectedAdvertisementType} placeholder="Wybierz rodzaj" />
-                        {selectedAdvertisementType?.value === 'sell' && (
-                            <TextInput
-                                style={styles.input}
-                                value={price}
-                                onChangeText={handlePriceChange}
-                                placeholder="Podaj cenę"
-                                keyboardType="numeric"
-                            />
-                        )}
-                    </View>
+                    <CustomSelect options={advertisementTypeOptions} value={selectedAdvertisementType} onChange={setSelectedAdvertisementType} placeholder="Wybierz rodzaj" />
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>E-mail:</Text>
-                        <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder="np. example@example.com" keyboardType="email-address" />
-                    </View>
+                    {selectedAdvertisementType?.value === "sell" && (
+                        <TextInput
+                            style={styles.input}
+                            value={price}
+                            onChangeText={handlePriceChange}
+                            placeholder="Podaj cenę"
+                            keyboardType="numeric"
+                        />
+                    )}
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Numer telefonu:</Text>
-                        <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} placeholder="np. 123456789" keyboardType="phone-pad" />
-                    </View>
+                    <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder="E-mail" keyboardType="email-address" />
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Miejsce zamieszkania:</Text>
-                        <BrandSelect options={cityOptions} value={selectedCity} onChange={setSelectedCity} placeholder="Wpisz lub wybierz z listy" />
-                    </View>
+                    <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} placeholder="Numer telefonu" keyboardType="phone-pad" />
+
+                    <BrandSelect options={cityOptions} value={selectedCity} onChange={setSelectedCity} placeholder="Wybierz miasto" />
 
                     <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
                         <Text style={styles.submitButtonText}>Dodaj ogłoszenie</Text>
@@ -222,15 +195,15 @@ const AddItem = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f8f8f8',
+        backgroundColor: "#f8f8f8",
     },
     formContainer: {
         padding: 20,
     },
     header: {
         fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1e3a8a',
+        fontWeight: "bold",
+        color: "#1e3a8a",
         marginBottom: 20,
     },
     formGroup: {
@@ -238,45 +211,36 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 16,
-        fontWeight: 'bold',
-        color: '#333',
+        fontWeight: "bold",
+        color: "#333",
         marginBottom: 5,
     },
     input: {
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: "#ccc",
         borderRadius: 10,
-        paddingHorizontal: 15,
-        paddingVertical: 10,
+        padding: 10,
         fontSize: 16,
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
     },
     textArea: {
         height: 100,
-        textAlignVertical: 'top',
-    },
-    helperText: {
-        fontSize: 12,
-        color: '#777',
-        marginTop: 5,
+        textAlignVertical: "top",
     },
     errorText: {
-        color: 'red',
+        color: "red",
         fontSize: 12,
-        marginTop: 5,
     },
     submitButton: {
-        backgroundColor: '#28a745',
+        backgroundColor: "#28a745",
         paddingVertical: 15,
         borderRadius: 25,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 20,
+        alignItems: "center",
     },
     submitButtonText: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
 });
 

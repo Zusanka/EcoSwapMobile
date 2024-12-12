@@ -1,96 +1,90 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons';
-import { faHeart as faHeartSolid } from '@fortawesome/free-solid-svg-icons';
+import React from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
 
-const ItemCard = ({ item, likedItems, handleLikeClick }) => {
+const ItemCard = ({ item = {}, likedItems = {}, handleLikeClick = () => {} }) => {
     return (
-        <View key={item.id} style={styles.cardContainer}>
+        <View style={styles.card}>
             <View style={styles.imageContainer}>
-                <Image 
-                    source={{ uri: item.image }}
+                <Image
+                    source={{ uri: item?.image || "https://via.placeholder.com/150" }}
                     style={styles.image}
                 />
                 <TouchableOpacity
-                    onPress={() => handleLikeClick(item.id)}
                     style={styles.likeButton}
+                    onPress={() => handleLikeClick(item?.id)}
                 >
-                    <FontAwesomeIcon
-                        icon={likedItems[item.id] ? faHeartSolid : faHeartRegular}
+                    <FontAwesome
+                        name={likedItems[item?.id] ? "heart" : "heart-o"}
                         size={24}
                         color="red"
                     />
                 </TouchableOpacity>
             </View>
-            <Text style={styles.itemName}>{item.name}</Text>
-            <Text style={styles.itemDate}>Dodano: {item.dateAdded}</Text>
-            <Text style={styles.itemPrice}>Cena: ${item.price}</Text>
-            <Text style={styles.itemBrand}>Marka: {item.brand}</Text>
-            <Text style={styles.itemCategory}>Kategoria: {item.category}</Text>
+            <Text style={styles.name}>{item?.name || "Brak nazwy"}</Text>
+            <Text style={styles.dateAdded}>Dodano: {item?.dateAdded || "Nieznana data"}</Text>
+            <Text style={styles.price}>Cena: {item?.price || "0.00"} zł</Text>
+            <Text style={styles.details}>Marka: {item?.brand || "Nieznana marka"}</Text>
+            <Text style={styles.details}>Kategoria: {item?.category || "Nieznana kategoria"}</Text>
         </View>
     );
 };
 
+
 const styles = StyleSheet.create({
-    cardContainer: {
-        width: 150,
-        padding: 10,
+    card: {
+        width: 160,
+        padding: 16,
+        backgroundColor: "#fff",
         borderRadius: 10,
-        backgroundColor: '#fff',
-        shadowColor: '#000',
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-        elevation: 5,
-        alignItems: 'center',
-        marginBottom: 15,
+        alignItems: "center",
+        margin: 8,
     },
     imageContainer: {
-        width: '100%',
-        height: 150,
-        marginBottom: 10,
-        position: 'relative',
+        position: "relative",
+        width: "100%",
+        height: 120,
+        marginBottom: 12,
     },
     image: {
-        width: '100%',
-        height: '100%',
-        borderRadius: 10,
+        width: "100%",
+        height: "100%",
+        borderRadius: 8,
+        resizeMode: "cover",
     },
     likeButton: {
-        position: 'absolute',
+        position: "absolute",
         top: 8,
         right: 8,
+        backgroundColor: "#fff",
+        padding: 4,
+        borderRadius: 16,
     },
-    itemName: {
+    name: {
         fontSize: 14,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 4,
+        fontWeight: "bold",
+        textAlign: "center",
     },
-    itemDate: {
-        fontSize: 10,
-        color: '#666',
-        textAlign: 'center',
-        marginBottom: 4,
+    dateAdded: {
+        fontSize: 12,
+        color: "#777",
+        textAlign: "center",
     },
-    itemPrice: {
+    price: {
         fontSize: 16,
-        fontWeight: 'bold',
-        color: '#333',
-        textAlign: 'center',
-        marginBottom: 4,
+        fontWeight: "bold",
+        color: "#333",
+        textAlign: "center",
+        marginVertical: 4,
     },
-    itemBrand: {
-        fontSize: 10,
-        color: '#666',
-        textAlign: 'center',
-        marginBottom: 2,
-    },
-    itemCategory: {
-        fontSize: 10,
-        color: '#666',
-        textAlign: 'center',
+    details: {
+        fontSize: 12,
+        color: "#777",
+        textAlign: "center",
     },
 });
 

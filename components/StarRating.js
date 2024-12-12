@@ -1,7 +1,7 @@
 import React from 'react';
+import { View, TouchableOpacity } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
-import { View, TouchableOpacity } from 'react-native';
 
 export const renderStars = (rating, onStarClick) => {
     const fullStars = Math.floor(rating);
@@ -12,56 +12,19 @@ export const renderStars = (rating, onStarClick) => {
     for (let i = 0; i < fullStars; i++) {
         stars.push(
             <TouchableOpacity key={`full-${i}`} onPress={() => onStarClick(i + 1)}>
-                <FontAwesomeIcon
-                    icon={faStar}
-                    size={24}
-                    color="#FFD700" // Yellow for full stars
-                />
+                <FontAwesomeIcon icon={faStar} size={24} color="#FFD700" />
             </TouchableOpacity>
         );
     }
 
-    if (partialStar > 0) {
-        stars.push(
-            <View key="partial" style={{ position: 'relative' }}>
-                <FontAwesomeIcon 
-                    icon={faStar} 
-                    size={24} 
-                    color="#d3d3d3" // Grey for empty portion
-                    style={{ position: 'absolute' }} 
-                />
-                <View style={{ 
-                    position: 'absolute', 
-                    left: 0, 
-                    width: `${partialStar * 100}%`, 
-                    overflow: 'hidden'
-                }}>
-                    <FontAwesomeIcon 
-                        icon={faStar} 
-                        size={24} 
-                        color="#FFD700" // Yellow for partial star
-                    />
-                </View>
-            </View>
-        );
-    }
-
-    const emptyStarsCount = 5 - (fullStars + partialStar);
+    const emptyStarsCount = 5 - fullStars;
     for (let i = 0; i < emptyStarsCount; i++) {
         stars.push(
             <TouchableOpacity key={`empty-${i}`} onPress={() => onStarClick(fullStars + 1)}>
-                <FontAwesomeIcon
-                    icon={faStar}
-                    size={24}
-                    color="#d3d3d3" // Grey for empty stars
-                />
+                <FontAwesomeIcon icon={faStar} size={24} color="#d3d3d3" />
             </TouchableOpacity>
         );
     }
 
-    return (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {stars}
-        </View>
-    );
+    return <View style={{ flexDirection: 'row' }}>{stars}</View>;
 };

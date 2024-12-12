@@ -1,7 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, FlatList } from "react-native";
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    StyleSheet,
+    FlatList,
+    Modal,
+} from "react-native";
 
 const CustomSelect = ({ options, value, onChange, placeholder }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -32,92 +37,122 @@ const CustomSelect = ({ options, value, onChange, placeholder }) => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.selectBox} onPress={() => setIsOpen((prev) => !prev)}>
-                <Text style={currentValue ? styles.selectedText : styles.placeholderText}>
+            <TouchableOpacity
+                style={styles.selector}
+                onPress={() => setIsOpen((prev) => !prev)}
+            >
+                <Text style={[styles.selectorText, !currentValue && styles.placeholderText]}>
                     {currentValue ? currentValue.label : placeholder}
                 </Text>
-                <FontAwesomeIcon icon={faChevronRight} size={16} color={currentValue ? "#000" : "#888"} />
             </TouchableOpacity>
 
-            {isOpen && (
-                <View style={styles.dropdownContainer}>
-                    {currentCategory ? (
-                        <View>
-                            <TouchableOpacity style={styles.option} onPress={handleBackToCategories}>
-                                <Text style={styles.optionText}>Back to Categories</Text>
-                            </TouchableOpacity>
-                            {currentCategory.subOptions.map((subOption) => (
+            <Modal visible={isOpen} transparent animationType="slide">
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        {currentCategory ? (
+                            <View>
                                 <TouchableOpacity
-                                    key={subOption.value}
-                                    style={styles.option}
-                                    onPress={() => handleSubOptionClick(subOption)}
+                                    style={styles.backButton}
+                                    onPress={handleBackToCategories}
                                 >
-                                    <Text style={styles.optionText}>{subOption.label}</Text>
+                                    <Text style={styles.backButtonText}>Powrót do kategorii</Text>
                                 </TouchableOpacity>
-                            ))}
-                        </View>
-                    ) : (
-                        <FlatList
-                            data={options}
-                            keyExtractor={(item) => item.value}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    style={styles.option}
-                                    onPress={() => handleOptionClick(item)}
-                                >
-                                    <Text style={styles.optionText}>{item.label}</Text>
-                                    {item.subOptions && (
-                                        <FontAwesomeIcon icon={faChevronRight} size={16} color="#888" />
+                                <FlatList
+                                    data={currentCategory.subOptions}
+                                    keyExtractor={(item) => item.value}
+                                    renderItem={({ item }) => (
+                                        <TouchableOpacity
+                                            style={styles.option}
+                                            onPress={() => handleSubOptionClick(item)}
+                                        >
+                                            <Text style={styles.optionText}>{item.label}</Text>
+                                        </TouchableOpacity>
                                     )}
-                                </TouchableOpacity>
-                            )}
-                        />
-                    )}
+                                />
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={options}
+                                keyExtractor={(item) => item.value}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={styles.option}
+                                        onPress={() => handleOptionClick(item)}
+                                    >
+                                        <Text style={styles.optionText}>{item.label}</Text>
+                                    </TouchableOpacity>
+                                )}
+                            />
+                        )}
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setIsOpen(false)}
+                        >
+                            <Text style={styles.closeButtonText}>Zamknij</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            )}
+            </Modal>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        marginVertical: 10,
+        marginBottom: 16,
     },
-    selectBox: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
+    selector: {
+        padding: 10,
         borderWidth: 1,
         borderColor: "#ccc",
-        borderRadius: 16,
-        paddingHorizontal: 10,
-        paddingVertical: 12,
-        backgroundColor: "#fff",
+        borderRadius: 8,
+    },
+    selectorText: {
+        fontSize: 16,
+        color: "#333",
     },
     placeholderText: {
         color: "#888",
     },
-    selectedText: {
-        color: "#000",
-    },
-    dropdownContainer: {
-        marginTop: 5,
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 16,
-        backgroundColor: "#fff",
-        maxHeight: 200,
-        overflow: "hidden",
-    },
-    option: {
-        paddingVertical: 12,
-        paddingHorizontal: 10,
-        flexDirection: "row",
-        justifyContent: "space-between",
+    modalContainer: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: "center",
         alignItems: "center",
     },
+    modalContent: {
+        width: "80%",
+        backgroundColor: "#fff",
+        borderRadius: 8,
+        padding: 16,
+        elevation: 4,
+    },
+    backButton: {
+        marginBottom: 16,
+    },
+    backButtonText: {
+        fontSize: 16,
+        color: "#007AFF",
+        textAlign: "center",
+    },
+    option: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: "#eee",
+    },
     optionText: {
-        color: "#000",
+        fontSize: 16,
+    },
+    closeButton: {
+        marginTop: 16,
+        padding: 10,
+        backgroundColor: "#007AFF",
+        borderRadius: 8,
+    },
+    closeButtonText: {
+        color: "#fff",
+        textAlign: "center",
+        fontSize: 16,
     },
 });
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { renderStars } from './StarRating';  // Import the renderStars function
+import { renderStars } from './StarRating'; // Import the renderStars function
 
 const ReviewCard = ({ username, rating, text, userImage, date }) => {
     const formattedDate = date
@@ -9,18 +9,18 @@ const ReviewCard = ({ username, rating, text, userImage, date }) => {
             month: '2-digit',
             year: 'numeric',
         })
-        : "Brak daty"; // In case 'date' is invalid or not provided, show "Brak daty"
+        : 'Brak daty'; // In case 'date' is invalid or not provided, show "Brak daty"
 
     return (
-        <View style={styles.reviewCard}>
+        <View style={styles.container}>
             <View style={styles.userInfo}>
                 {/* User info section (Image and Name) */}
-                <View style={styles.userImageContainer}>
+                <View style={styles.imageContainer}>
                     {userImage ? (
                         <Image source={{ uri: userImage }} style={styles.userImage} />
                     ) : (
-                        <View style={styles.noUserImage}>
-                            <Text style={styles.userInitial}>
+                        <View style={styles.placeholder}>
+                            <Text style={styles.placeholderText}>
                                 {username?.charAt(0).toUpperCase()}
                             </Text>
                         </View>
@@ -30,71 +30,68 @@ const ReviewCard = ({ username, rating, text, userImage, date }) => {
             </View>
 
             <View style={styles.reviewContent}>
-                <View style={styles.starRating}>
-                    {renderStars(rating)} {/* Render the star ratings */}
-                </View>
+                <View style={styles.rating}>{renderStars(rating)}</View>
                 <Text style={styles.reviewText}>{text}</Text>
-                <Text style={styles.reviewDate}>{formattedDate}</Text>
+                <Text style={styles.date}>{formattedDate}</Text>
             </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    reviewCard: {
+    container: {
         borderTopWidth: 1,
         borderTopColor: '#e0e0e0',
-        paddingTop: 16,
-        paddingHorizontal: 10,
-        marginBottom: 20,
+        paddingTop: 12,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
     },
     userInfo: {
-        flexDirection: 'row',
+        marginRight: 16,
         alignItems: 'center',
-        marginBottom: 10,
     },
-    userImageContainer: {
+    imageContainer: {
         width: 48,
         height: 48,
         borderRadius: 24,
         overflow: 'hidden',
-        marginRight: 12,
+        marginBottom: 8,
     },
     userImage: {
         width: '100%',
         height: '100%',
     },
-    noUserImage: {
+    placeholder: {
         width: '100%',
         height: '100%',
-        backgroundColor: '#e0e0e0',
+        backgroundColor: '#ccc',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    userInitial: {
-        fontSize: 20,
+    placeholderText: {
+        fontSize: 18,
         color: '#fff',
-        fontWeight: 'bold',
     },
     username: {
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 14,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
     reviewContent: {
         flex: 1,
     },
-    starRating: {
+    rating: {
         flexDirection: 'row',
-        marginBottom: 6,
+        marginBottom: 4,
     },
     reviewText: {
+        color: '#606060',
         fontSize: 14,
-        color: '#555',
-        marginBottom: 10,
+        marginBottom: 4,
     },
-    reviewDate: {
+    date: {
         fontSize: 12,
-        color: '#999',
+        color: '#909090',
     },
 });
 

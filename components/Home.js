@@ -1,245 +1,211 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ImageBackground, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import Navbar from "./Navbar";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  ImageBackground,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import ItemCard from "./ItemCard";
 
 const Home = () => {
-  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [likedItems, setLikedItems] = useState({});
   const navigation = useNavigation();
 
-  const scrollToTop = () => {
-    Alert.alert("Feature in Progress", "Scroll to top not implemented in React Native.");
+  const items = [
+    { id: 1, name: "T-shirt", dateAdded: "29.10.2024", category: "Moda", price: 29.99, brand: "Stradivarius", image: require("../assets/1.jpeg") },
+    { id: 2, name: "Plecak z eko skóry", dateAdded: "30.10.2024", category: "Moda", price: 49.99, brand: "Zara", image: require("../assets/2.jpeg") },
+    { id: 3, name: "Skórzane buty", dateAdded: "30.10.2024", category: "Obuwie", price: 79.99, brand: "CCC", image: require("../assets/3.jpeg") },
+    { id: 4, name: "Książka", dateAdded: "30.10.2024", category: "Książki", price: 19.99, brand: "Wydawnictwo Znak", image: require("../assets/4.jpeg") },
+    { id: 5, name: "Spódnica zamszowa", dateAdded: "30.10.2024", category: "Moda", price: 15.99, brand: "Orsay", image: require("../assets/5.jpeg") },
+    { id: 6, name: "Koszula w króliki", dateAdded: "30.10.2024", category: "Moda", price: 39.99, brand: "H&M", image: require("../assets/6.jpeg") },
+  ];
+
+  const handleLikeClick = (itemId) => {
+    setLikedItems((prevLikedItems) => ({
+      ...prevLikedItems,
+      [itemId]: !prevLikedItems[itemId],
+    }));
   };
 
-  const handleScroll = (event) => {
-    if (event.nativeEvent.contentOffset.y > 300) {
-      setShowScrollButton(true);
-    } else {
-      setShowScrollButton(false);
-    }
-  };
+  const renderHeader = () => (
+      <>
+        <View style={styles.authButtonsContainer}>
+          <TouchableOpacity
+              style={styles.authButton}
+              onPress={() => navigation.navigate("Register")}
+          >
+            <Text style={styles.authButtonText}>ZAREJESTRUJ SIĘ</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+              style={[styles.authButton, styles.loginButton]}
+              onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={styles.authButtonText}>ZALOGUJ SIĘ</Text>
+          </TouchableOpacity>
+        </View>
 
-  useEffect(() => {
-    // Placeholder for any mount logic
-  }, []);
-
-  return (
-    <>
-      <Navbar />
-      <ScrollView style={styles.container} onScroll={handleScroll} scrollEventThrottle={16}>
         <ImageBackground
-          source={require('../assets/prudence-earl-8F0I12ypHPA-unsplash.jpg')}
-          style={styles.imageBackground}
+            source={require("../assets/prudence-earl-8F0I12ypHPA-unsplash.jpg")}
+            style={styles.heroBackground}
         >
-          <View style={styles.overlay} />
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.headerText}>Welcome to EcoSwap!</Text>
-            <Text style={styles.subHeaderText}>Join us to exchange eco-friendly products.</Text>
+          <View style={styles.overlay}>
+            <Text style={styles.heroTitle}>Witaj w EcoSwap!</Text>
+            <Text style={styles.heroSubtitle}>Dołącz do Nas i wspieraj planetę.</Text>
             <TouchableOpacity
-              onPress={() => navigation.navigate("AddItem")}
-              style={styles.addItemButton}
+                style={styles.heroButton}
+                onPress={() => navigation.navigate("AddItem")}
             >
-              <Text style={styles.addItemButtonText}>DODAJ PRZEDMIOT</Text>
+              <Text style={styles.heroButtonText}>DODAJ PRZEDMIOT</Text>
             </TouchableOpacity>
           </View>
         </ImageBackground>
+      </>
+  );
 
-        <View style={styles.whyUsContainer}>
-          <Text style={styles.sectionHeaderText}>Dlaczego my?</Text>
-          <Text style={styles.sectionDescriptionText}>
-            Znaleźć produkty w różnych kategoriach, które pomogą Ci żyć bardziej ekologicznie.
-          </Text>
-          <View style={styles.grid}>
-            <View style={styles.gridItem}>
-              <Text style={styles.gridItemHeader}>Ekologiczne produkty</Text>
-              <Text style={styles.gridItemText}>
-                Wszystko, czego potrzebujesz do życia w zgodzie z naturą.
-              </Text>
-            </View>
-            <View style={styles.gridItem}>
-              <Text style={styles.gridItemHeader}>Produkty do domu</Text>
-              <Text style={styles.gridItemText}>
-                Produkty, które pomogą Ci uczynić Twój dom bardziej ekologicznym.
-              </Text>
-            </View>
-            <View style={styles.gridItem}>
-              <Text style={styles.gridItemHeader}>Zrównoważona moda</Text>
-              <Text style={styles.gridItemText}>
-                Stylowe ubrania z naturalnych materiałów, które dbają o środowisko.
-              </Text>
-            </View>
-          </View>
+  const renderFooter = () => (
+      <View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Dlaczego my?</Text>
+          <FlatList
+              data={[
+                { id: 1, title: "Ekologiczne produkty", description: "Wszystko, czego potrzebujesz do życia w zgodzie z naturą." },
+                { id: 2, title: "Produkty do domu", description: "Produkty, które pomogą Ci uczynić Twój dom bardziej ekologicznym." },
+                { id: 3, title: "Zrównoważona moda", description: "Stylowe ubrania z naturalnych materiałów, które dbają o środowisko." },
+              ]}
+              keyExtractor={(item) => item.id.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => (
+                  <View style={styles.card}>
+                    <Text style={styles.cardTitle}>{item.title}</Text>
+                    <Text style={styles.cardDescription}>{item.description}</Text>
+                  </View>
+              )}
+          />
         </View>
 
-        <View style={styles.categoriesContainer}>
-          <Text style={styles.sectionHeaderText}>Kategorie</Text>
-          <View style={styles.categoriesGrid}>
-            {categoryData.map((item, index) => (
-              <TouchableOpacity key={index} style={styles.categoryItem}>
-                <Icon name={item.icon} size={40} color="gray" />
-                <Text style={styles.categoryItemText}>{item.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Ostatnio dodane</Text>
+          <FlatList
+              data={items}
+              keyExtractor={(item) => item.id.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.itemsContainer}
+              renderItem={({ item }) => (
+                  <ItemCard
+                      item={item}
+                      liked={likedItems[item.id]}
+                      onLike={() => handleLikeClick(item.id)}
+                  />
+              )}
+          />
         </View>
+      </View>
+  );
 
-        <View style={styles.recentItemsContainer}>
-          <Text style={styles.sectionHeaderText}>Ostatnio dodane</Text>
-          {/* You could add items here */}
-        </View>
-      </ScrollView>
-
-      {showScrollButton && (
-        <TouchableOpacity onPress={scrollToTop} style={styles.scrollButton}>
-          <Icon name="chevron-up" size={24} color="#fff" />
-        </TouchableOpacity>
-      )}
-    </>
+  return (
+      <FlatList
+          data={[]}
+          ListHeaderComponent={renderHeader}
+          ListFooterComponent={renderFooter}
+          contentContainerStyle={styles.container}
+      />
   );
 };
 
-const categoryData = [
-  { label: "Moda", icon: "tshirt" },
-  { label: "Obuwie", icon: "shoe-prints" },
-  { label: "Książki", icon: "book" },
-  { label: "Muzyka", icon: "music" },
-  { label: "Film", icon: "film" },
-  { label: "Zabawki", icon: "puzzle-piece" },
-  { label: "Uroda", icon: "eye" },
-  { label: "Dom", icon: "house" },
-  { label: "Elektronika", icon: "laptop" },
-];
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    backgroundColor: "#f8f8f8",
   },
-  imageBackground: {
-    width: '100%',
+  authButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  authButton: {
+    backgroundColor: "#28a745",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  loginButton: {
+    backgroundColor: "#007AFF",
+  },
+  authButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  heroBackground: {
     height: 300,
-    justifyContent: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  headerTextContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  headerText: {
+  heroTitle: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 8,
+    fontWeight: "bold",
+    color: "#fff",
   },
-  subHeaderText: {
+  heroSubtitle: {
     fontSize: 18,
-    color: 'white',
-    marginBottom: 16,
+    color: "#fff",
+    marginBottom: 20,
   },
-  addItemButton: {
-    backgroundColor: '#38a169',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 30,
+  heroButton: {
+    backgroundColor: "#28a745",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
   },
-  addItemButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+  heroButtonText: {
+    color: "#fff",
+    fontSize: 16,
   },
-  whyUsContainer: {
-    padding: 16,
-    alignItems: 'center',
+  section: {
+    paddingVertical: 20,
+    paddingHorizontal: 10,
   },
-  sectionHeaderText: {
+  sectionTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#1e3a8a',
+    fontWeight: "bold",
+    marginBottom: 10,
   },
-  sectionDescriptionText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 16,
-    color: '#4b5563',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  gridItem: {
-    width: '30%',
-    backgroundColor: 'white',
-    padding: 16,
+  card: {
+    backgroundColor: "#fff",
     borderRadius: 10,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    padding: 15,
+    marginRight: 10,
+    width: 200,
+    shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 5,
   },
-  gridItemHeader: {
+  cardTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#1e3a8a',
+    fontWeight: "bold",
   },
-  gridItemText: {
+  cardDescription: {
     fontSize: 14,
-    color: '#6b7280',
+    color: "#666",
+    marginTop: 5,
   },
-  categoriesContainer: {
-    padding: 16,
-    alignItems: 'center',
-  },
-  categoriesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  categoryItem: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    margin: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  categoryItemText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#1e3a8a',
-  },
-  recentItemsContainer: {
-    padding: 16,
-    alignItems: 'center',
-  },
-  scrollButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#38a169',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+  itemsContainer: {
+    paddingHorizontal: 10,
   },
 });
 

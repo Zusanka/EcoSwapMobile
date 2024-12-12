@@ -1,11 +1,23 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import { faCamera, faTimes } from "@fortawesome/free-solid-svg-icons";
-import * as ImagePicker from 'expo-image-picker';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    Image,
+    StyleSheet,
+    FlatList,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { FontAwesome } from "@expo/vector-icons";
 
 const ImageUploader = ({ images, onImageUpload, onRemoveImage }) => {
     const handleImagePick = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+            alert("Potrzebne pozwolenie na dostęp do galerii!");
+            return;
+        }
+
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsMultipleSelection: true,
@@ -13,25 +25,30 @@ const ImageUploader = ({ images, onImageUpload, onRemoveImage }) => {
         });
 
         if (!result.canceled) {
-            onImageUpload(result.assets.map(asset => asset.uri));
+            const selectedImages = result.assets ? result.assets.map((asset) => asset.uri) : [result.uri];
+            onImageUpload(selectedImages);
         }
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.heading}>Dodaj zdjęcia:</Text>
-            <Text style={styles.subText}>*Pierwsze zdjęcie będzie zdjęciem głównym</Text>
+        <View>
+            <Text style={styles.title}>Dodaj zdjęcia:</Text>
+            <Text style={styles.subtitle}>*Pierwsze zdjęcie będzie zdjęciem głównym</Text>
 
             <TouchableOpacity
-                onPress={handleImagePick}
                 style={styles.uploadButton}
+                onPress={handleImagePick}
             >
                 <Text style={styles.uploadButtonText}>Dodaj pliki</Text>
             </TouchableOpacity>
 
-            <View style={styles.imageGrid}>
-                {[...Array(6)].map((_, index) => (
-                    <View key={index} style={styles.imageContainer}>
+            <FlatList
+                data={[...Array(6)]}
+                numColumns={3}
+                keyExtractor={(_, index) => index.toString()}
+                contentContainerStyle={styles.imageGrid}
+                renderItem={({ index }) => (
+                    <View style={styles.imageContainer}>
                         {images[index] ? (
                             <View style={styles.imageWrapper}>
                                 <Image
@@ -39,80 +56,76 @@ const ImageUploader = ({ images, onImageUpload, onRemoveImage }) => {
                                     style={styles.image}
                                 />
                                 <TouchableOpacity
-                                    onPress={() => onRemoveImage(index)}
                                     style={styles.removeButton}
+                                    onPress={() => onRemoveImage(index)}
                                 >
-                                    <FontAwesomeIcon icon={faTimes} size={16} color="#fff" />
+                                    <FontAwesome name="times" size={16} color="#fff" />
                                 </TouchableOpacity>
                             </View>
                         ) : (
-                            <FontAwesomeIcon icon={faCamera} size={32} color="#888" />
+                            <FontAwesome name="camera" size={24} color="#ccc" />
                         )}
                     </View>
-                ))}
-            </View>
+                )}
+            />
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        marginVertical: 10,
-    },
-    heading: {
+    title: {
         fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 5,
+        fontWeight: "bold",
+        marginBottom: 8,
     },
-    subText: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 10,
+    subtitle: {
+        fontSize: 12,
+        color: "#1e3a8a",
+        marginBottom: 16,
     },
     uploadButton: {
-        backgroundColor: '#28a745',
+        backgroundColor: "#28a745",
         paddingVertical: 12,
         borderRadius: 24,
-        alignItems: 'center',
-        marginBottom: 15,
+        alignItems: "center",
+        marginBottom: 16,
     },
     uploadButtonText: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     imageGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        gap: 8,
     },
     imageContainer: {
-        width: '30%',
+        width: "30%",
         aspectRatio: 1,
-        backgroundColor: '#f0f0f0',
+        backgroundColor: "#f0f0f0",
+        justifyContent: "center",
+        alignItems: "center",
         borderWidth: 1,
-        borderColor: '#ccc',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 10,
+        borderColor: "#ccc",
+        borderRadius: 8,
+        margin: "1%",
     },
     imageWrapper: {
-        width: '100%',
-        height: '100%',
-        position: 'relative',
+        position: "relative",
+        width: "100%",
+        height: "100%",
     },
     image: {
-        width: '100%',
-        height: '100%',
+        width: "100%",
+        height: "100%",
         borderRadius: 8,
     },
     removeButton: {
-        position: 'absolute',
-        top: 5,
-        right: 5,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        padding: 5,
-        borderRadius: 12,
+        position: "absolute",
+        top: 8,
+        right: 8,
+        backgroundColor: "#333",
+        padding: 4,
+        borderRadius: 16,
     },
 });
 

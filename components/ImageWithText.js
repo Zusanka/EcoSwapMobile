@@ -1,41 +1,47 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, Image, StyleSheet } from "react-native";
 
 const ImageWithText = () => {
   return (
-    <View style={styles.container}>
-      <Image 
-        source={require('./assets/recipe5.jpeg')} // Ensure the image is in the correct path under your assets folder
-        style={styles.image}
-      />
-      <View style={styles.overlay}>
-        <Text style={styles.text}>EcoSwap</Text>
+      <View style={styles.container}>
+        <Image
+            source={require("./recipe5.jpeg")} // Upewnij się, że ścieżka do obrazu jest poprawna
+            style={styles.image}
+        />
+        <View style={styles.textContainer}>
+          <Text style={styles.text}>EcoSwap</Text>
+        </View>
       </View>
-    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
-    maxWidth: 400,
-    maxHeight: 400,
+    position: "relative",
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+    width: "100%",
+    height: 400,
+    resizeMode: "cover",
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
+  textContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
   },
   text: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: '#28a745',
-    fontFamily: 'DancingScript-Regular', // Ensure you have the font correctly set up in your project
+    fontWeight: "bold",
+    color: "#28a745",
+    textAlign: "center",
+    fontFamily: "DancingScript-Regular", // Dodaj niestandardową czcionkę, jeśli została zaimportowana
   },
 });
 

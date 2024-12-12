@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRoute } from '@react-navigation/native';
 import PersonalDetails from './PersonalDetails';
 import ShippingMethod from './ShippingMethod';
 import PaymentMethod from './PaymentMethod';
 import SummaryDetail from './SummaryDetail';
 import Navbar from './Navbar';
 
-const PersonDetails = () => {
-    const route = useRoute();
-    const formData = route.params?.formData || {}; // Odbieraj dane przekazane jako parametry nawigacji
-    const [price, setPrice] = useState(formData?.price || 0); 
+const PersonDetails = ({ route }) => {
+    const { formData } = route.params || {}; // Receive formData with price
+    const [price, setPrice] = useState(formData?.price || 0); // Ensure price is a number
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [isShippingCollapsed, setIsShippingCollapsed] = useState(true);
     const [isPaymentCollapsed, setIsPaymentCollapsed] = useState(true);
@@ -28,50 +25,34 @@ const PersonDetails = () => {
     const [paymentMethod, setPaymentMethod] = useState('');
 
     useEffect(() => {
-        const loadData = async () => {
-            try {
-                const savedName = await AsyncStorage.getItem('name');
-                const savedSurname = await AsyncStorage.getItem('surname');
-                const savedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-                const savedStreet = await AsyncStorage.getItem('street');
-                const savedHouseNumber = await AsyncStorage.getItem('houseNumber');
-                const savedApartmentNumber = await AsyncStorage.getItem('apartmentNumber');
-                const savedPostalCode = await AsyncStorage.getItem('postalCode');
-                const savedCity = await AsyncStorage.getItem('city');
+        const savedName = localStorage.getItem('name');
+        const savedSurname = localStorage.getItem('surname');
+        const savedPhoneNumber = localStorage.getItem('phoneNumber');
+        const savedStreet = localStorage.getItem('street');
+        const savedHouseNumber = localStorage.getItem('houseNumber');
+        const savedApartmentNumber = localStorage.getItem('apartmentNumber');
+        const savedPostalCode = localStorage.getItem('postalCode');
+        const savedCity = localStorage.getItem('city');
 
-                if (savedName) setName(savedName);
-                if (savedSurname) setSurname(savedSurname);
-                if (savedPhoneNumber) setPhoneNumber(savedPhoneNumber);
-                if (savedStreet) setStreet(savedStreet);
-                if (savedHouseNumber) setHouseNumber(savedHouseNumber);
-                if (savedApartmentNumber) setApartmentNumber(savedApartmentNumber);
-                if (savedPostalCode) setPostalCode(savedPostalCode);
-                if (savedCity) setCity(savedCity);
-            } catch (error) {
-                console.error("Error loading data from AsyncStorage:", error);
-            }
-        };
-
-        loadData();
+        if (savedName) setName(savedName);
+        if (savedSurname) setSurname(savedSurname);
+        if (savedPhoneNumber) setPhoneNumber(savedPhoneNumber);
+        if (savedStreet) setStreet(savedStreet);
+        if (savedHouseNumber) setHouseNumber(savedHouseNumber);
+        if (savedApartmentNumber) setApartmentNumber(savedApartmentNumber);
+        if (savedPostalCode) setPostalCode(savedPostalCode);
+        if (savedCity) setCity(savedCity);
     }, []);
 
-    const toggleCollapse = () => {
-        setIsCollapsed(!isCollapsed);
-    };
-
-    const toggleShippingCollapse = () => {
-        setIsShippingCollapsed(!isShippingCollapsed);
-    };
-
-    const togglePaymentCollapse = () => {
-        setIsPaymentCollapsed(!isPaymentCollapsed);
-    };
+    const toggleCollapse = () => setIsCollapsed(!isCollapsed);
+    const toggleShippingCollapse = () => setIsShippingCollapsed(!isShippingCollapsed);
+    const togglePaymentCollapse = () => setIsPaymentCollapsed(!isPaymentCollapsed);
 
     return (
-        <>
+        <View style={styles.container}>
             <Navbar />
-            <ScrollView contentContainerStyle={styles.container}>
-                <View style={styles.formContainer}>
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <View style={styles.leftSection}>
                     <PersonalDetails
                         isCollapsed={isCollapsed}
                         toggleCollapse={toggleCollapse}
@@ -109,28 +90,29 @@ const PersonDetails = () => {
                         setHovered={setHovered}
                     />
                 </View>
-
-                <View style={styles.summaryContainer}>
-                    <SummaryDetail
-                        shippingMethod={shippingMethod}
-                        price={price}
-                    />
+                <View style={styles.rightSection}>
+                    <SummaryDetail shippingMethod={shippingMethod} price={price} />
                 </View>
             </ScrollView>
-        </>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+    },
+    scrollContainer: {
         padding: 16,
     },
-    formContainer: {
+    leftSection: {
         flex: 3,
+        padding: 8,
     },
-    summaryContainer: {
-        flex: 2,
-        marginTop: 16,
+    rightSection: {
+        flex: 1,
+        padding: 8,
     },
 });
 

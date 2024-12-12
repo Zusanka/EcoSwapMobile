@@ -1,54 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  StyleSheet,
-  Modal,
-  FlatList,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { useRoute } from '@react-navigation/native';
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, TextInput, FlatList } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faEnvelope, faPhone, faHome, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import Navbar from './Navbar';
 import ItemCard from './ItemCard';
 import ReviewCard from './ReviewCard';
 import { renderStars } from './StarRating';
 
 const User = () => {
+  const navigation = useNavigation();
   const route = useRoute();
-  const { username, phoneNumber, city, userImage, email } = route.params || {};
+  const {
+    username,
+    phoneNumber,
+    city,
+    userImage,
+    email,
+    price,
+    images,
+    name,
+    brand,
+    category,
+  } = route.params || {};
 
-  const [storedItemData, setStoredItemData] = useState(null);
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [newReview, setNewReview] = useState({
-    username: '',
-    rating: 0,
-    text: '',
-  });
+
 
   const [reviews, setReviews] = useState([
-    { id: 1, username: 'User 1', rating: 3, text: "Great service!", date: "2024-10-01T12:00:00Z" },
-    { id: 2, username: 'User 2', rating: 4, text: "Very reliable.", date: "2024-09-20T12:00:00Z" },
-    { id: 3, username: 'User 3', rating: 4, text: "Highly recommended!", date: "2024-08-15T12:00:00Z" },
+    { id: 1, username: 'User 1', rating: 3, text: 'Great service!', date: '2024-10-01' },
+    { id: 2, username: 'User 2', rating: 4, text: 'Very reliable.', date: '2024-09-20' },
+    { id: 3, username: 'User 3', rating: 5, text: 'Highly recommended!', date: '2024-08-15' },
   ]);
 
-  const items = [
-    { id: 1, name: "item", image: "https://via.placeholder.com/150", dateAdded: "2024-10-01", price: 199.99, brand: "Brand A", category: "Electronics" },
-    { id: 2, name: "Item 2", image: "https://via.placeholder.com/150", dateAdded: "2024-09-20", price: 149.49, brand: "Brand B", category: "Furniture" },
-    { id: 3, name: "Item 3", image: "https://via.placeholder.com/150", dateAdded: "2024-08-15", price: 299.00, brand: "Brand C", category: "Clothing" },
-    { id: 4, name: "Item 4", image: "https://via.placeholder.com/150", dateAdded: "2024-07-01", price: 99.99, brand: "Brand D", category: "Toys" },
-    { id: 5, name: "Item 5", image: "https://via.placeholder.com/150", dateAdded: "2024-08-01", price: 9.99, brand: "Brand D", category: "Toys" }
-  ];
+  const [items, setItems] = useState([
+    { id: 1, name: 'T-shirt', dateAdded: '2024-10-29', category: 'Moda', price: 29.99, brand: 'Stradivarius', image: require('../assets/1.jpeg') },
+    { id: 2, name: 'Eco leather backpack', dateAdded: '2024-10-30', category: 'Moda', price: 49.99, brand: 'Zara', image: require('../assets/2.jpeg') },
+    // Add more items here...
+  ]);
 
-  useEffect(() => {
-    const storedData = items;
-    if (storedData) {
-      setStoredItemData(storedData);
-    }
-  }, []);
+  const [likedItems, setLikedItems] = useState({});
+  const [showReviews, setShowReviews] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [newReview, setNewReview] = useState({ username: '', rating: 0, text: '' });
+
+  const handleToggleReviews = () => {
+    setShowReviews(!showReviews);
+  };
+
+  const handleLikeClick = (id) => {
+    setLikedItems((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleReviewSubmit = () => {
+    const newReviewData = {
+      ...newReview,
+      id: reviews.length + 1,
+      date: new Date().toISOString(),
+    };
+    setReviews([...reviews, newReviewData]);
+    setNewReview({ username: '', rating: 0, text: '' });
+    setShowReviewForm(false);
+  };
 
   const calculateAverageRating = () => {
     const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
@@ -57,200 +69,92 @@ const User = () => {
 
   const averageRating = parseFloat(calculateAverageRating());
 
-  const handleReviewSubmit = () => {
-    const newReviewData = {
-      ...newReview,
-      id: reviews.length + 1,
-      date: new Date().toISOString(),
-    };
-    setReviews((prevReviews) => [...prevReviews, newReviewData]);
-    setNewReview({ username: '', rating: 0, text: '' });
-    setShowReviewForm(false);
-  };
-
-  const handleStarClick = (rating) => {
-    setNewReview({ ...newReview, rating });
-  };
-
   return (
-    <>
-      <Navbar />
       <ScrollView style={styles.container}>
+        <Navbar />
         <View style={styles.profileContainer}>
-          <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: userImage || 'https://via.placeholder.com/150' }}
-              style={styles.profileImage}
-            />
-          </View>
+          <Image source={userImage} style={styles.profileImage} />
           <Text style={styles.username}>{username}</Text>
-          <View style={styles.starsContainer}>
-            {renderStars(averageRating)}
-          </View>
-          <Text style={styles.averageRating}>Średnia: {averageRating}/5 wg {reviews.length} opinii</Text>
+          <View style={styles.starsContainer}>{renderStars(averageRating)}</View>
+          <Text style={styles.averageRating} onPress={handleToggleReviews}>
+            Average: {averageRating}/5 based on {reviews.length} reviews
+          </Text>
         </View>
-
         <View style={styles.contactContainer}>
-          <Text style={styles.sectionTitle}>KONTAKT</Text>
-          <View style={styles.contactItem}>
-            <Icon name="envelope" size={20} style={styles.icon} />
-            <Text style={styles.contactText}>{email}</Text>
+          <Text style={styles.contactTitle}>Contact Information</Text>
+          <View style={styles.contactRow}>
+            <FontAwesomeIcon icon={faEnvelope} style={styles.icon} />
+            <Text>{email}</Text>
           </View>
-          <View style={styles.contactItem}>
-            <Icon name="phone" size={20} style={styles.icon} />
-            <Text style={styles.contactText}>{phoneNumber}</Text>
+          <View style={styles.contactRow}>
+            <FontAwesomeIcon icon={faPhone} style={styles.icon} />
+            <Text>{phoneNumber}</Text>
           </View>
-          <View style={styles.contactItem}>
-            <Icon name="home" size={20} style={styles.icon} />
-            <Text style={styles.contactText}>{city}</Text>
+          <View style={styles.contactRow}>
+            <FontAwesomeIcon icon={faHome} style={styles.icon} />
+            <Text>{city}</Text>
           </View>
         </View>
-
-        <View style={styles.itemsContainer}>
-          <Text style={styles.sectionTitle}>PRZEDMIOTY UŻYTKOWNIKA</Text>
-          <FlatList
-            data={storedItemData}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <ItemCard item={item} />
-            )}
-            horizontal
-          />
-        </View>
-
-        <View style={styles.reviewsContainer}>
-          <Text style={styles.sectionTitle}>OPINIE O UŻYTKOWNIKU</Text>
-          {reviews.map((review) => (
-            <ReviewCard
-              key={review.id}
-              username={review.username}
-              rating={review.rating}
-              text={review.text}
-              date={review.date}
-            />
-          ))}
-
-          {!showReviewForm && (
-            <TouchableOpacity
-              onPress={() => setShowReviewForm(true)}
-              style={styles.reviewButton}
-            >
-              <Text style={styles.reviewButtonText}>Dodaj opinię</Text>
-            </TouchableOpacity>
-          )}
-
-          {showReviewForm && (
-            <View style={styles.reviewForm}>
-              <TextInput
-                value={newReview.text}
-                onChangeText={(text) => setNewReview({ ...newReview, text })}
-                placeholder="Napisz swoją opinię"
-                style={styles.textInput}
-                multiline
+        {showReviews ? (
+            <View style={styles.reviewsContainer}>
+              <FlatList
+                  data={reviews}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => <ReviewCard {...item} />}
               />
-              <View style={styles.starsContainer}>
-                {renderStars(newReview.rating, handleStarClick)}
-              </View>
-              <TouchableOpacity
-                onPress={handleReviewSubmit}
-                style={styles.submitButton}
-              >
-                <Text style={styles.submitButtonText}>Dodaj opinię</Text>
-              </TouchableOpacity>
+              {showReviewForm ? (
+                  <View style={styles.reviewForm}>
+                    <TextInput
+                        style={styles.textInput}
+                        value={newReview.text}
+                        onChangeText={(text) => setNewReview({ ...newReview, text })}
+                        placeholder="Write your review..."
+                        multiline
+                    />
+                    <TouchableOpacity style={styles.submitButton} onPress={handleReviewSubmit}>
+                      <Text style={styles.submitButtonText}>Submit Review</Text>
+                    </TouchableOpacity>
+                  </View>
+              ) : (
+                  <TouchableOpacity style={styles.addReviewButton} onPress={() => setShowReviewForm(true)}>
+                    <Text style={styles.addReviewButtonText}>Add Review</Text>
+                  </TouchableOpacity>
+              )}
             </View>
-          )}
-        </View>
+        ) : (
+            <View style={styles.itemsContainer}>
+              <FlatList
+                  data={items}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => (
+                      <ItemCard item={item} liked={!!likedItems[item.id]} onLike={() => handleLikeClick(item.id)} />
+                  )}
+              />
+            </View>
+        )}
       </ScrollView>
-    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-  },
-  profileContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  imageContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    overflow: 'hidden',
-    marginBottom: 10,
-  },
-  profileImage: {
-    width: '100%',
-    height: '100%',
-  },
-  username: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    marginVertical: 10,
-  },
-  averageRating: {
-    fontSize: 14,
-    color: 'gray',
-  },
-  contactContainer: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  contactItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  icon: {
-    marginRight: 10,
-  },
-  contactText: {
-    fontSize: 16,
-  },
-  itemsContainer: {
-    marginBottom: 20,
-  },
-  reviewsContainer: {
-    marginBottom: 20,
-  },
-  reviewButton: {
-    backgroundColor: 'green',
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  reviewButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  reviewForm: {
-    marginTop: 20,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
-  },
-  submitButton: {
-    backgroundColor: 'blue',
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
+  container: { flex: 1, backgroundColor: '#f9f9f9' },
+  profileContainer: { alignItems: 'center', padding: 16 },
+  profileImage: { width: 100, height: 100, borderRadius: 50, marginBottom: 8 },
+  username: { fontSize: 18, fontWeight: 'bold' },
+  starsContainer: { flexDirection: 'row', marginVertical: 8 },
+  averageRating: { fontSize: 14, color: '#555', textDecorationLine: 'underline' },
+  contactContainer: { padding: 16 },
+  contactTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
+  contactRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 4 },
+  icon: { marginRight: 8 },
+  reviewsContainer: { padding: 16 },
+  itemsContainer: { padding: 16 },
+  reviewForm: { marginVertical: 16 },
+  textInput: { borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 8, marginBottom: 8 },
+  submitButton: { backgroundColor: '#4caf50', padding: 12, borderRadius: 8 },
+  submitButtonText: { color: '#fff', textAlign: 'center' },
+  addReviewButton: { backgroundColor: '#2196f3', padding: 12, borderRadius: 8 },
+  addReviewButtonText: { color: '#fff', textAlign: 'center' },
 });
 
 export default User;

@@ -1,32 +1,37 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, StyleSheet, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import Navbar from './Navbar';
+import React, { useState } from "react";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    Image,
+    FlatList,
+    StyleSheet,
+    ScrollView,
+} from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
 
 const Messages = () => {
     const [selectedUser, setSelectedUser] = useState(null);
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState("");
     const [users] = useState([
-        { id: 1, name: 'Jeans', lastMessage: 'Hello, how are you?', lastMessageTime: '12:30', clothingImage: require('../assets/recipe5.jpeg') },
-        { id: 2, name: 'Jacket', lastMessage: 'Hi, I need help with the product', lastMessageTime: '1:00', clothingImage: require('../assets/recipe5.jpeg') },
-        { id: 3, name: 'Shirt', lastMessage: 'Where is my order?', lastMessageTime: '2:00', clothingImage: require('../assets/recipe5.jpeg') },
+        { id: 1, name: "Koszula z królikami", lastMessage: "Dzień dobry, można prosić o wymiary bluzki?", lastMessageTime: "17:54", clothingImage: require("../assets/6.jpeg") },
+        { id: 2, name: "Plecak", lastMessage: "Wiadomość", lastMessageTime: "1:00", clothingImage: require("../assets/2.jpeg") },
+        { id: 3, name: "T-shirt", lastMessage: "Gdzie jest moje zamówienie?", lastMessageTime: "2:00", clothingImage: require("../assets/1.jpeg") },
     ]);
 
     const [messages, setMessages] = useState({
         1: [
-            { text: 'Hello, User 1!', isUser: true, timestamp: '12:30 PM' },
-            { text: 'How are you doing?', isUser: true, timestamp: '12:35 PM' },
-            { text: 'I am good, thanks!', isUser: false, timestamp: '12:40 PM' },
+            { text: "Dzień dobry, można prosić o wymiary bluzki?", isUser: true, timestamp: "17:54" },
+            { text: "Odpowiedź z drugiej strony", isUser: false, timestamp: "17:54" },
         ],
         2: [
-            { text: 'Hello, User 2!', isUser: true, timestamp: '1:00 PM' },
-            { text: 'How can I assist you?', isUser: false, timestamp: '1:05 PM' },
-            { text: 'I need help with a product.', isUser: true, timestamp: '1:10 PM' },
+            { text: "Hello, User 2!", isUser: true, timestamp: "1:00 PM" },
+            { text: "How can I assist you?", isUser: false, timestamp: "1:05 PM" },
         ],
         3: [
-            { text: 'Hello, User 3!', isUser: true, timestamp: '2:00 PM' },
-            { text: 'Where is my order?', isUser: false, timestamp: '2:05 PM' },
-            { text: 'Your order will arrive soon.', isUser: true, timestamp: '2:10 PM' },
+            { text: "Hello, User 3!", isUser: true, timestamp: "2:00 PM" },
+            { text: "Where is my order?", isUser: false, timestamp: "2:05 PM" },
         ],
     });
 
@@ -36,139 +41,108 @@ const Messages = () => {
 
     const handleSendMessage = () => {
         if (message.trim()) {
-            const newMessage = { text: message, isUser: true, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-            setMessages(prevMessages => ({
+            const newMessage = {
+                text: message,
+                isUser: true,
+                timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            };
+            setMessages((prevMessages) => ({
                 ...prevMessages,
                 [selectedUser.id]: [...prevMessages[selectedUser.id], newMessage],
             }));
-            setMessage('');
+            setMessage("");
         }
     };
 
-    const handleBuyNow = () => {
-        Alert.alert('Zakupiono', `Zakupiono ${selectedUser.name}!`);
-    };
-
     return (
-        <>
-            <Navbar />
-            <View style={styles.container}>
-                <View style={styles.chatContainer}>
-                    {/* Left Panel - Lista użytkowników */}
-                    <View style={styles.userListContainer}>
-                        <Text style={styles.messageHeader}>Wiadomości</Text>
-                        <ScrollView>
-                            {users.map((user) => (
-                                <TouchableOpacity
-                                    key={user.id}
-                                    style={styles.userItem}
-                                    onPress={() => openChat(user)}
+        <View style={styles.container}>
+            <View style={styles.userList}>
+                <FlatList
+                    data={users}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            style={styles.userItem}
+                            onPress={() => openChat(item)}
+                        >
+                            <Image source={item.clothingImage} style={styles.userImage} />
+                            <View style={styles.userInfo}>
+                                <Text style={styles.userName}>{item.name}</Text>
+                                <Text style={styles.lastMessage}>{item.lastMessage}</Text>
+                                <Text style={styles.messageTime}>{item.lastMessageTime}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    )}
+                />
+            </View>
+            <View style={styles.chatContainer}>
+                {selectedUser ? (
+                    <>
+                        <View style={styles.chatHeader}>
+                            <View style={styles.chatHeaderInfo}>
+                                <Image
+                                    source={selectedUser.clothingImage}
+                                    style={styles.chatHeaderImage}
+                                />
+                                <Text style={styles.chatHeaderName}>{selectedUser.name}</Text>
+                            </View>
+                        </View>
+                        <ScrollView style={styles.messages}>
+                            {messages[selectedUser.id].map((msg, index) => (
+                                <View
+                                    key={index}
+                                    style={[
+                                        styles.messageBubble,
+                                        msg.isUser ? styles.userMessage : styles.otherMessage,
+                                    ]}
                                 >
-                                    <Image
-                                        source={user.clothingImage}
-                                        style={styles.userImage}
-                                    />
-                                    <View style={styles.userInfo}>
-                                        <Text style={styles.userName}>{user.name}</Text>
-                                        <Text style={styles.userLastMessage}>{user.lastMessage}</Text>
-                                        <Text style={styles.userLastMessageTime}>{user.lastMessageTime}</Text>
-                                    </View>
-                                </TouchableOpacity>
+                                    <Text style={styles.messageText}>{msg.text}</Text>
+                                    <Text style={styles.messageTime}>{msg.timestamp}</Text>
+                                </View>
                             ))}
                         </ScrollView>
+                        <View style={styles.messageInputContainer}>
+                            <TextInput
+                                style={styles.messageInput}
+                                placeholder="Napisz wiadomość..."
+                                value={message}
+                                onChangeText={setMessage}
+                            />
+                            <TouchableOpacity
+                                style={styles.sendButton}
+                                onPress={handleSendMessage}
+                            >
+                                <FontAwesome name="send" size={20} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                ) : (
+                    <View style={styles.noChatSelected}>
+                        <Text style={styles.noChatText}>Wybierz użytkownika, aby rozpocząć czat</Text>
                     </View>
-
-                    {/* Right Panel - Czat z wybranym użytkownikiem */}
-                    <View style={styles.chatWindowContainer}>
-                        {selectedUser ? (
-                            <>
-                                <View style={styles.chatHeader}>
-                                    <View style={styles.selectedUserInfo}>
-                                        <Image
-                                            source={selectedUser.clothingImage}
-                                            style={styles.selectedUserImage}
-                                        />
-                                        <Text style={styles.selectedUserName}>{selectedUser.name}</Text>
-                                    </View>
-                                    <TouchableOpacity onPress={handleBuyNow} style={styles.buyNowButton}>
-                                        <Text style={styles.buyNowButtonText}>KUP TERAZ</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                
-                                <Text style={styles.chatSubtitle}>rozmowa z {selectedUser.name}</Text>
-
-                                <ScrollView style={styles.messagesContainer}>
-                                    {messages[selectedUser.id].map((msg, index) => (
-                                        <View key={index} style={[styles.messageItem, msg.isUser ? styles.messageUser : styles.messageOther]}>
-                                            <Image
-                                                source={require('../assets/woman.png')}
-                                                style={[styles.messageImage, msg.isUser ? styles.messageImageUser : styles.messageImageOther]}
-                                            />
-                                            <View style={[styles.messageBox, msg.isUser ? styles.messageBoxUser : styles.messageBoxOther]}>
-                                                <Text style={styles.messageText}>{msg.text}</Text>
-                                                <Text style={styles.messageTimestamp}>{msg.timestamp}</Text>
-                                            </View>
-                                        </View>
-                                    ))}
-                                </ScrollView>
-
-                                <View style={styles.messageInputContainer}>
-                                    <TextInput
-                                        style={styles.messageInput}
-                                        placeholder="Napisz wiadomość..."
-                                        value={message}
-                                        onChangeText={setMessage}
-                                    />
-                                    <TouchableOpacity onPress={handleSendMessage} style={styles.sendButton}>
-                                        <Icon name="paper-plane" size={24} color="#fff" />
-                                    </TouchableOpacity>
-                                </View>
-                            </>
-                        ) : (
-                            <View style={styles.noUserSelectedContainer}>
-                                <Text style={styles.noUserSelectedText}>Wybierz użytkownika, aby rozpocząć czat</Text>
-                            </View>
-                        )}
-                    </View>
-                </View>
+                )}
             </View>
-        </>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f0f0',
-        padding: 16,
+        flexDirection: "row",
+        backgroundColor: "#f8f8f8",
     },
-    chatContainer: {
-        flexDirection: 'row',
-        height: '85%',
-        backgroundColor: 'white',
-        borderRadius: 20,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 5,
-    },
-    userListContainer: {
-        width: '30%',
-        padding: 16,
+    userList: {
+        width: "30%",
+        backgroundColor: "#fff",
         borderRightWidth: 1,
-        borderRightColor: '#e5e7eb',
-    },
-    messageHeader: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 16,
+        borderRightColor: "#ccc",
     },
     userItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
+        flexDirection: "row",
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f0f0f0",
     },
     userImage: {
         width: 50,
@@ -176,131 +150,98 @@ const styles = StyleSheet.create({
         borderRadius: 25,
     },
     userInfo: {
-        marginLeft: 16,
+        marginLeft: 10,
     },
     userName: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
-    userLastMessage: {
+    lastMessage: {
         fontSize: 14,
-        color: '#6b7280',
+        color: "#666",
     },
-    userLastMessageTime: {
-        fontSize: 12,
-        color: '#9ca3af',
-    },
-    chatWindowContainer: {
+    // messageTime: {
+    //     fontSize: 12,
+    //     color: "#999",
+    // },
+    chatContainer: {
         flex: 1,
-        padding: 16,
+        padding: 10,
     },
     chatHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 10,
     },
-    selectedUserInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    chatHeaderInfo: {
+        flexDirection: "row",
+        alignItems: "center",
     },
-    selectedUserImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-    },
-    selectedUserName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginLeft: 16,
-    },
-    buyNowButton: {
-        backgroundColor: '#38a169',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-    },
-    buyNowButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
-    chatSubtitle: {
-        fontSize: 14,
-        color: '#6b7280',
-        marginBottom: 8,
-    },
-    messagesContainer: {
-        flex: 1,
-        marginBottom: 16,
-    },
-    messageItem: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        marginBottom: 16,
-    },
-    messageUser: {
-        flexDirection: 'row-reverse',
-    },
-    messageOther: {
-        flexDirection: 'row',
-    },
-    messageImage: {
+    chatHeaderImage: {
         width: 40,
         height: 40,
-        borderRadius: 20,
+        borderRadius: 8,
+        marginRight: 10,
     },
-    messageBox: {
-        maxWidth: '70%',
+    chatHeaderName: {
+        fontSize: 18,
+        fontWeight: "bold",
+    },
+    messages: {
+        flex: 1,
+    },
+    messageBubble: {
         padding: 10,
-        borderRadius: 10,
-        marginHorizontal: 8,
+        marginVertical: 5,
+        borderRadius: 8,
+        maxWidth: "70%",
     },
-    messageBoxUser: {
-        backgroundColor: '#3b82f6',
+    userMessage: {
+        backgroundColor: "#007bff",
+        alignSelf: "flex-end",
+        color: "#fff",
     },
-    messageBoxOther: {
-        backgroundColor: '#e5e7eb',
+    otherMessage: {
+        backgroundColor: "#e0e0e0",
+        alignSelf: "flex-start",
     },
     messageText: {
-        color: '#fff',
+        fontSize: 16,
     },
-    messageTimestamp: {
-        fontSize: 10,
-        color: '#f0f0f0',
-        marginTop: 4,
-        textAlign: 'right',
+    messageTime: {
+        fontSize: 12,
+        color: "#999",
+        alignSelf: "flex-end",
     },
     messageInputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 16,
+        flexDirection: "row",
+        alignItems: "center",
     },
     messageInput: {
         flex: 1,
         borderWidth: 1,
-        borderColor: '#e5e7eb',
+        borderColor: "#ccc",
         borderRadius: 20,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        backgroundColor: '#fff',
-        marginRight: 16,
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        marginRight: 10,
     },
     sendButton: {
-        backgroundColor: '#3b82f6',
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: "#007bff",
+        justifyContent: "center",
+        alignItems: "center",
     },
-    noUserSelectedContainer: {
+    noChatSelected: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
     },
-    noUserSelectedText: {
-        fontSize: 18,
-        color: '#9ca3af',
+    noChatText: {
+        fontSize: 16,
+        color: "#666",
     },
 });
 

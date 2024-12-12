@@ -1,229 +1,275 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ImageBackground,
+  StyleSheet,
+  ScrollView,
+  Alert,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const Login = () => {
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>EcoSwap</Text>
-        <Text style={styles.welcomeText}>Witaj ponownie!</Text>
-        <Text style={styles.subHeaderText}>Zaloguj się przez e-mail:</Text>
-        
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Login</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Wpisz login"
-          />
-        </View>
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: login, password: password }), // Wysyłamy dane logowania
+      });
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Hasło</Text>
-          <View style={styles.passwordContainer}>
+      if (response.ok) {
+        const data = await response.json();
+
+        // Wyświetlenie powiadomienia o sukcesie
+        Alert.alert("Sukces", "Zalogowano pomyślnie!");
+
+        // Przechowanie JWT tokenu (możesz użyć np. AsyncStorage do zapisu)
+        // AsyncStorage.setItem('userToken', data.token);
+
+        // Przejście na ekran główny lub inny
+        navigation.navigate("Home", { user: data });
+      } else {
+        const errorData = await response.text(); // Obsługa wiadomości błędu
+        Alert.alert("Błąd logowania", errorData || "Nieprawidłowe dane");
+      }
+    } catch (error) {
+      Alert.alert("Błąd", "Nie udało się połączyć z serwerem");
+    }
+  };
+
+  return (
+      <ScrollView contentContainerStyle={styles.container}>
+        <ImageBackground
+            source={require("../assets/4881822.jpg")} // Upewnij się, że ścieżka obrazu jest poprawna
+            style={styles.backgroundImage}
+            imageStyle={styles.imageStyle}
+        >
+          <View style={styles.overlay}>
+            <Text style={styles.logo}>EcoSwap</Text>
+            <Text style={styles.welcomeText}>Witaj ponownie!</Text>
+          </View>
+        </ImageBackground>
+        <View style={styles.formContainer}>
+          <Text style={styles.subText}>Zaloguj się przez e-mail:</Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Login</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Wpisz hasło"
-              secureTextEntry={!showPassword}
+                style={styles.input}
+                placeholder="Wpisz login"
+                placeholderTextColor="#ccc"
+                value={login}
+                onChangeText={setLogin} // Wiążemy dane logowania
             />
-            <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
-              <Icon
-                name={showPassword ? 'eye-slash' : 'eye'}
-                size={20}
-                color="gray"
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Hasło</Text>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                  style={styles.input}
+                  placeholder="Wpisz hasło"
+                  placeholderTextColor="#ccc"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword} // Wiążemy hasło
               />
+              <TouchableOpacity
+                  style={styles.passwordToggle}
+                  onPress={() => setShowPassword((prev) => !prev)}
+              >
+                <Text style={styles.passwordToggleText}>
+                  {showPassword ? "Ukryj" : "Pokaż"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <TouchableOpacity>
+            <Text style={styles.forgotPassword}>Nie pamiętasz hasła?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+            <Text style={styles.loginButtonText}>Zaloguj się</Text>
+          </TouchableOpacity>
+
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>lub zaloguj się przez</Text>
+            <View style={styles.divider} />
+          </View>
+
+          <View style={styles.socialButtonsContainer}>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: "#DB4437" }]}>
+              <Text style={styles.socialButtonText}>G</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: "#4267B2" }]}>
+              <Text style={styles.socialButtonText}>F</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: "#E1306C" }]}>
+              <Text style={styles.socialButtonText}>I</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.registerContainer}>
+            <Text style={styles.registerText}>Nie masz jeszcze konta?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Registration")}>
+              <Text style={styles.registerLink}>Zarejestruj się</Text>
             </TouchableOpacity>
           </View>
         </View>
-
-        <TouchableOpacity>
-          <Text style={styles.forgotPassword}>Nie pamiętasz hasła?</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.loginButton}>
-          <Text style={styles.loginButtonText}>Zaloguj się</Text>
-        </TouchableOpacity>
-
-        <View style={styles.orContainer}>
-          <View style={styles.divider} />
-          <Text style={styles.orText}>lub zaloguj się przez</Text>
-          <View style={styles.divider} />
-        </View>
-
-        <View style={styles.socialButtonsContainer}>
-          <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#DB4437' }]}>
-            <Icon name="google" size={24} color="white" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4267B2' }]}>
-            <Icon name="facebook" size={24} color="white" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#C13584' }]}>
-            <Icon name="instagram" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>Nie masz jeszcze konta?</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Registration')}>
-            <Text style={styles.registerLink}>Zarejestruj się</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.imageContainer}>
-        <Image
-          source={require('../assets/pexels-cottonbro-4068314.jpg')}
-          style={styles.backgroundImage}
-        />
-        <View style={styles.overlay}>
-          <Text style={styles.overlayText}>EcoSwap</Text>
-        </View>
-      </View>
-    </View>
+      </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#fff',
+    flexGrow: 1,
+    backgroundColor: "#fff",
   },
-  formContainer: {
-    flex: 1,
-    padding: 16,
-    justifyContent: 'center',
+  backgroundImage: {
+    width: "100%",
+    height: 300,
+    justifyContent: "flex-end",
   },
-  title: {
+  imageStyle: {
+    resizeMode: "cover",
+  },
+  overlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    alignItems: "center",
+  },
+  logo: {
     fontSize: 48,
-    color: '#38a169',
-    textAlign: 'center',
-    fontFamily: 'DancingScript-Regular',
-    marginBottom: 16,
+    fontWeight: "bold",
+    color: "#28a745",
+    fontFamily: "DancingScript-Regular",
+    textAlign: "center",
   },
   welcomeText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1e3a8a',
-    marginBottom: 8,
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+    textAlign: "center",
+    marginTop: 10,
   },
-  subHeaderText: {
+  formContainer: {
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    backgroundColor: "#fff",
+    marginTop: -50,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  subText: {
     fontSize: 16,
-    color: '#4b5563',
-    marginBottom: 16,
+    color: "#666",
+    marginBottom: 20,
+    textAlign: "center",
   },
-  inputContainer: {
-    marginBottom: 16,
+  inputGroup: {
+    marginBottom: 20,
   },
   label: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#4b5563',
-    marginBottom: 4,
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 8,
   },
   input: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#d1d5db',
-    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    padding: 10,
+    fontSize: 16,
+    color: "#333",
+    backgroundColor: "#f9f9f9",
   },
   passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#d1d5db',
-    paddingVertical: 8,
-    justifyContent: 'space-between',
+    position: "relative",
+  },
+  passwordToggle: {
+    position: "absolute",
+    right: 10,
+    top: 10,
+  },
+  passwordToggleText: {
+    color: "#007AFF",
   },
   forgotPassword: {
+    color: "#007AFF",
     fontSize: 14,
-    color: '#1e40af',
-    marginTop: 8,
+    textAlign: "right",
   },
   loginButton: {
-    backgroundColor: '#38a169',
-    paddingVertical: 16,
-    borderRadius: 30,
-    alignItems: 'center',
-    marginTop: 16,
+    backgroundColor: "#28a745",
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: "center",
+    marginTop: 20,
   },
   loginButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
-  orContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 16,
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 20,
   },
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#d1d5db',
+    backgroundColor: "#ccc",
   },
-  orText: {
-    fontSize: 14,
-    color: '#6b7280',
-    paddingHorizontal: 8,
+  dividerText: {
+    marginHorizontal: 10,
+    color: "#666",
   },
   socialButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
   },
   socialButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  socialButtonText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
   },
   registerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 16,
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 20,
   },
   registerText: {
-    fontSize: 14,
-    color: '#6b7280',
+    color: "#333",
   },
   registerLink: {
-    fontSize: 14,
-    color: '#1e40af',
-    fontWeight: 'bold',
-    marginLeft: 4,
-  },
-  imageContainer: {
-    flex: 1,
-    display: 'none', // Możesz ustawić 'flex: 1' i usunąć 'display' jeśli używasz na dużych ekranach.
-    position: 'relative',
-  },
-  backgroundImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  overlayText: {
-    fontSize: 48,
-    color: 'white',
-    fontFamily: 'DancingScript-Regular',
+    color: "#007AFF",
+    fontWeight: "bold",
+    marginLeft: 5,
   },
 });
 

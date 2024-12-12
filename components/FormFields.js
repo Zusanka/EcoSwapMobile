@@ -1,16 +1,21 @@
 import React from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
-import CustomSelect from "./CustomSelect"; // Ensure the path is correct
+import {
+    View,
+    Text,
+    TextInput,
+    StyleSheet,
+} from "react-native";
+import CustomSelect from "./CustomSelect"; // Upewnij się, że ścieżka jest poprawna
 
 const FormFields = ({
-    title,
-    setTitle,
-    category,
-    setCategory,
-    subCategory,
-    setSubCategory,
-    subCategories
-}) => {
+                        title,
+                        setTitle,
+                        category,
+                        setCategory,
+                        subCategory,
+                        setSubCategory,
+                        subCategories,
+                    }) => {
     const categoryOptions = [
         { value: "", label: "Wybierz kategorię" },
         { value: "electronics", label: "Elektronika" },
@@ -27,14 +32,13 @@ const FormFields = ({
 
     return (
         <View style={styles.container}>
-            <View style={styles.inputContainer}>
+            <View style={styles.field}>
                 <Text style={styles.label}>Tytuł ogłoszenia:</Text>
                 <TextInput
-                    required
                     style={styles.input}
                     placeholder="np. nowa bluzka do oddania"
                     value={title}
-                    onChangeText={(text) => setTitle(text)}
+                    onChangeText={setTitle}
                 />
             </View>
 
@@ -66,20 +70,21 @@ const FormFields = ({
 
 const styles = StyleSheet.create({
     container: {
-        marginVertical: 10,
+        marginBottom: 16,
     },
-    inputContainer: {
-        marginBottom: 10,
+    field: {
+        marginBottom: 16,
     },
     label: {
         fontSize: 16,
         fontWeight: "bold",
-        marginBottom: 5,
+        color: "#333",
+        marginBottom: 8,
     },
     input: {
         borderWidth: 1,
         borderColor: "#ccc",
-        borderRadius: 8,
+        borderRadius: 10,
         padding: 10,
         fontSize: 16,
         backgroundColor: "#fff",

@@ -1,27 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Modal } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
-import Icon from "react-native-vector-icons/FontAwesome";
-import Navbar from "./Navbar";
-import ChatWindow from "./ChatWindow"; 
+import {
+    View,
+    Text,
+    Image,
+    TouchableOpacity,
+    ScrollView,
+    StyleSheet,
+    Modal,
+} from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import ChatWindow from "./ChatWindow";
 
-const Item = () => {
+const Item = ({ route, navigation }) => {
     const [formData, setFormData] = useState(null);
     const [modalImageIndex, setModalImageIndex] = useState(null);
     const [isHeartFilled, setIsHeartFilled] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
-    const route = useRoute();
-    const navigation = useNavigation();
 
     useEffect(() => {
-        // Pobieranie przekazanych danych z nawigacji
-        if (route.params?.formData) {
-            setFormData(route.params.formData);
+        const { itemData } = route.params || {};
+        if (itemData) {
+            setFormData(itemData);
         }
     }, [route.params]);
 
     if (!formData) {
-        return <View style={styles.loadingContainer}><Text>Ładowanie danych...</Text></View>;
+        return (
+            <View style={styles.loadingContainer}>
+                <Text>Ładowanie danych...</Text>
+            </View>
+        );
     }
 
     const openModal = (index) => {
@@ -49,97 +57,62 @@ const Item = () => {
     };
 
     return (
-        <>
-            <Navbar />
-            <ScrollView contentContainerStyle={styles.container}>
-                <View style={styles.itemDetailsContainer}>
-                    <Text style={styles.title}>{formData.title}</Text>
-                    
-                    {formData.images && (
-                        <View>
-                            <TouchableOpacity onPress={() => openModal(0)}>
-                                <Image
-                                    source={{ uri: formData.images[0] }}
-                                    style={styles.mainImage}
-                                />
-                                <TouchableOpacity onPress={toggleHeart} style={styles.heartButton}>
-                                    <Icon name={isHeartFilled ? "heart" : "heart-o"} size={24} color="red" />
-                                </TouchableOpacity>
-                            </TouchableOpacity>
-
-                            {formData.images.length > 1 && (
-                                <ScrollView horizontal contentContainerStyle={styles.thumbnailContainer}>
-                                    {formData.images.slice(1).map((image, index) => (
-                                        <TouchableOpacity key={index} onPress={() => openModal(index + 1)}>
-                                            <Image
-                                                source={{ uri: image }}
-                                                style={styles.thumbnail}
-                                            />
-                                        </TouchableOpacity>
-                                    ))}
-                                </ScrollView>
-                            )}
-                        </View>
-                    )}
-
-                    <Text style={styles.sectionTitle}>OPIS</Text>
-                    <Text style={styles.description}>{formData.description}</Text>
-
-                    <View style={styles.infoContainer}>
-                        <Text>KATEGORIA: {formData.category}</Text>
-                        <Text>MARKA: {formData.brand}</Text>
-                        <Text>STAN: {formData.condition}</Text>
-                    </View>
-                </View>
-
-                <View style={styles.buyContainer}>
-                    <Text style={styles.priceLabel}>CENA</Text>
-                    <Text style={styles.price}>{formData.price} zł</Text>
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate("PersonDetails", { formData })}
-                        style={styles.buyButton}
-                    >
-                        <Text style={styles.buyButtonText}>KUP TERAZ</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.contactContainer}>
-                    <Text style={styles.contactLabel}>DANE KONTAKTOWE</Text>
-                    <View style={styles.userInfoContainer}>
-                        <TouchableOpacity onPress={() => navigation.navigate("User", { username: "truskawka123", phoneNumber: formData.phoneNumber, city: formData.city, userImage: "woman.png", email: formData.email })}>
-                            <Image
-                                source={require('../assets/woman.png')}
-                                style={styles.userImage}
-                            />
+        <ScrollView style={styles.container}>
+            <View style={styles.imageSection}>
+                <Image
+                    source={{ uri: formData.images[0] }}
+                    style={styles.mainImage}
+                />
+                <TouchableOpacity style={styles.heartButton} onPress={toggleHeart}>
+                    <FontAwesome
+                        name={isHeartFilled ? "heart" : "heart-o"}
+                        size={24}
+                        color="red"
+                    />
+                </TouchableOpacity>
+                <ScrollView horizontal style={styles.imageScroll}>
+                    {formData.images.map((image, index) => (
+                        <TouchableOpacity key={index} onPress={() => openModal(index)}>
+                            <Image source={{ uri: image }} style={styles.thumbnailImage} />
                         </TouchableOpacity>
-                        <Text style={styles.username}>truskawka123</Text>
-                    </View>
-                    <Text>E-MAIL: {formData.email}</Text>
-                    <Text>TELEFON: {formData.phoneNumber}</Text>
-                    <Text>MIASTO: {formData.city}</Text>
+                    ))}
+                </ScrollView>
+            </View>
 
-                    <TouchableOpacity onPress={toggleChat} style={styles.chatButton}>
-                        <Icon name="comment" size={18} color="white" />
-                        <Text style={styles.chatButtonText}>Napisz w sprawie przedmiotu</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
+            <View style={styles.detailsSection}>
+                <Text style={styles.title}>{formData.title}</Text>
+                <Text style={styles.description}>{formData.description}</Text>
+                <Text style={styles.label}>Kategoria: {formData.category}</Text>
+                <Text style={styles.label}>Marka: {formData.brand}</Text>
+                <Text style={styles.label}>Stan: {formData.condition}</Text>
+                <Text style={styles.label}>Cena: {formData.price} zł</Text>
+                <TouchableOpacity
+                    style={styles.buyButton}
+                    onPress={() => navigation.navigate("PersonDetails", { formData })}
+                >
+                    <Text style={styles.buyButtonText}>KUP TERAZ</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.chatButton} onPress={toggleChat}>
+                    <FontAwesome name="comment" size={20} color="#fff" />
+                    <Text style={styles.chatButtonText}>Napisz w sprawie przedmiotu</Text>
+                </TouchableOpacity>
+            </View>
 
             {modalImageIndex !== null && (
-                <Modal visible={true} transparent={true}>
+                <Modal visible transparent animationType="fade">
                     <View style={styles.modalContainer}>
                         <Image
                             source={{ uri: formData.images[modalImageIndex] }}
                             style={styles.modalImage}
                         />
-                        <TouchableOpacity onPress={prevImage} style={styles.modalButtonLeft}>
-                            <Icon name="chevron-left" size={24} color="#fff" />
+                        <TouchableOpacity style={styles.modalClose} onPress={closeModal}>
+                            <FontAwesome name="times" size={24} color="#fff" />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={nextImage} style={styles.modalButtonRight}>
-                            <Icon name="chevron-right" size={24} color="#fff" />
+                        <TouchableOpacity style={styles.modalPrev} onPress={prevImage}>
+                            <FontAwesome name="chevron-left" size={24} color="#fff" />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
-                            <Icon name="times" size={24} color="#fff" />
+                        <TouchableOpacity style={styles.modalNext} onPress={nextImage}>
+                            <FontAwesome name="chevron-right" size={24} color="#fff" />
                         </TouchableOpacity>
                     </View>
                 </Modal>
@@ -152,140 +125,88 @@ const Item = () => {
                     onClose={toggleChat}
                 />
             )}
-        </>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        padding: 16,
+        flex: 1,
+        backgroundColor: "#f8f8f8",
     },
-    itemDetailsContainer: {
-        backgroundColor: "white",
+    loadingContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    imageSection: {
+        position: "relative",
+    },
+    mainImage: {
+        width: "100%",
+        height: 300,
+        resizeMode: "cover",
+    },
+    heartButton: {
+        position: "absolute",
+        top: 16,
+        right: 16,
+        backgroundColor: "#fff",
+        padding: 8,
         borderRadius: 16,
+    },
+    imageScroll: {
+        flexDirection: "row",
+        marginTop: 8,
+        paddingHorizontal: 8,
+    },
+    thumbnailImage: {
+        width: 80,
+        height: 80,
+        marginRight: 8,
+        borderRadius: 8,
+    },
+    detailsSection: {
         padding: 16,
-        marginBottom: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 5,
     },
     title: {
         fontSize: 24,
         fontWeight: "bold",
-        marginBottom: 16,
-    },
-    mainImage: {
-        width: "100%",
-        height: 200,
-        borderRadius: 10,
-    },
-    heartButton: {
-        position: "absolute",
-        top: 10,
-        right: 10,
-        backgroundColor: "rgba(255, 255, 255, 0.7)",
-        borderRadius: 20,
-        padding: 8,
-    },
-    thumbnailContainer: {
-        flexDirection: "row",
-        marginTop: 10,
-    },
-    thumbnail: {
-        width: 100,
-        height: 75,
-        borderRadius: 8,
-        marginRight: 10,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
-        marginTop: 16,
+        marginBottom: 8,
     },
     description: {
         fontSize: 16,
-        marginTop: 8,
-    },
-    infoContainer: {
-        marginTop: 16,
-    },
-    buyContainer: {
-        backgroundColor: "white",
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    priceLabel: {
-        fontSize: 14,
-        color: "#6b7280",
-    },
-    price: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 16,
-    },
-    buyButton: {
-        backgroundColor: "#38a169",
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: "center",
-    },
-    buyButtonText: {
-        color: "white",
-        fontSize: 18,
-        fontWeight: "bold",
-    },
-    contactContainer: {
-        backgroundColor: "white",
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    contactLabel: {
-        fontSize: 14,
-        color: "#6b7280",
+        color: "#666",
         marginBottom: 8,
     },
-    userInfoContainer: {
-        flexDirection: "row",
+    label: {
+        fontSize: 14,
+        color: "#333",
+        marginBottom: 4,
+    },
+    buyButton: {
+        backgroundColor: "#28a745",
+        padding: 12,
+        borderRadius: 8,
         alignItems: "center",
         marginBottom: 16,
     },
-    userImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        marginRight: 16,
-    },
-    username: {
+    buyButtonText: {
+        color: "#fff",
         fontSize: 16,
         fontWeight: "bold",
     },
     chatButton: {
-        backgroundColor: "#38a169",
-        paddingVertical: 12,
+        flexDirection: "row",
+        backgroundColor: "#007bff",
+        padding: 12,
         borderRadius: 8,
         alignItems: "center",
-        flexDirection: "row",
-        justifyContent: "center",
-        marginTop: 16,
     },
     chatButtonText: {
-        color: "white",
-        marginLeft: 8,
+        color: "#fff",
         fontSize: 16,
+        marginLeft: 8,
     },
     modalContainer: {
         flex: 1,
@@ -298,20 +219,22 @@ const styles = StyleSheet.create({
         height: "70%",
         resizeMode: "contain",
     },
-    modalButtonLeft: {
-        position: "absolute",
-        left: 20,
-        top: "50%",
-    },
-    modalButtonRight: {
-        position: "absolute",
-        right: 20,
-        top: "50%",
-    },
-    closeButton: {
+    modalClose: {
         position: "absolute",
         top: 40,
         right: 20,
+    },
+    modalPrev: {
+        position: "absolute",
+        left: 20,
+        top: "50%",
+        marginTop: -20,
+    },
+    modalNext: {
+        position: "absolute",
+        right: 20,
+        top: "50%",
+        marginTop: -20,
     },
 });
 

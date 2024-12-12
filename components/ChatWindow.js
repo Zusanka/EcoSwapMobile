@@ -1,7 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faTimes, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    FlatList,
+    Image,
+    StyleSheet,
+} from "react-native";
 
 const ChatWindow = ({ productName, productImage, onClose }) => {
     const [message, setMessage] = useState("");
@@ -9,62 +15,71 @@ const ChatWindow = ({ productName, productImage, onClose }) => {
 
     const handleSend = () => {
         if (message.trim()) {
-            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
             setMessages((prevMessages) => [...prevMessages, { text: message, isUser: true, timestamp }]);
             setMessage("");
 
             setTimeout(() => {
-                const responseTimestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                setMessages((prevMessages) => [...prevMessages, { text: "Odpowiedź z drugiej strony", isUser: false, timestamp: responseTimestamp }]);
+                const responseTimestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    { text: "Odpowiedź z drugiej strony", isUser: false, timestamp: responseTimestamp },
+                ]);
             }, 1000);
         }
     };
 
     return (
-        <View style={styles.chatContainer}>
-            <View style={styles.headerContainer}>
-                <View style={styles.productInfoContainer}>
-                    <View style={styles.productImageContainer}>
-                        <Text style={styles.productImageText}>{productImage}</Text>
-                    </View>
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <View style={styles.productInfo}>
+                    <Image source={{ uri: productImage }} style={styles.productImage} />
                     <Text style={styles.productName}>{productName}</Text>
                 </View>
-                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                    <FontAwesomeIcon icon={faTimes} size={20} color="gray" />
+                <TouchableOpacity onPress={onClose}>
+                    <Text style={styles.closeButton}>✕</Text>
                 </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.messageContainer}>
+            <View style={styles.messageContainer}>
                 {messages.length === 0 ? (
                     <Text style={styles.noMessagesText}>Brak wiadomości...</Text>
                 ) : (
-                    messages.map((msg, index) => (
-                        <View
-                            key={index}
-                            style={[
-                                styles.messageBubble,
-                                msg.isUser ? styles.userMessage : styles.otherMessage,
-                            ]}
-                        >
-                            <Text style={styles.messageText}>{msg.text}</Text>
-                            <Text style={[
-                                styles.timestamp,
-                                msg.isUser ? styles.userTimestamp : styles.otherTimestamp,
-                            ]}>{msg.timestamp}</Text>
-                        </View>
-                    ))
+                    <FlatList
+                        data={messages}
+                        keyExtractor={(_, index) => index.toString()}
+                        renderItem={({ item }) => (
+                            <View
+                                style={[
+                                    styles.message,
+                                    item.isUser ? styles.userMessage : styles.responseMessage,
+                                ]}
+                            >
+                                <Text>{item.text}</Text>
+                                <Text
+                                    style={[
+                                        styles.timestamp,
+                                        item.isUser ? styles.userTimestamp : styles.responseTimestamp,
+                                    ]}
+                                >
+                                    {item.timestamp}
+                                </Text>
+                            </View>
+                        )}
+                    />
                 )}
-            </ScrollView>
+            </View>
 
             <View style={styles.inputContainer}>
                 <TextInput
+                    style={styles.textInput}
                     placeholder="Napisz wiadomość..."
                     value={message}
-                    onChangeText={(text) => setMessage(text)}
-                    style={styles.textInput}
+                    onChangeText={setMessage}
+                    multiline
                 />
-                <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-                    <FontAwesomeIcon icon={faPaperPlane} size={20} color="white" />
+                <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+                    <Text style={styles.sendButtonText}>➤</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -72,108 +87,98 @@ const ChatWindow = ({ productName, productImage, onClose }) => {
 };
 
 const styles = StyleSheet.create({
-    chatContainer: {
-        position: 'absolute',
+    container: {
+        position: "absolute",
         bottom: 20,
         right: 20,
         width: 300,
-        height: 400,
-        backgroundColor: '#fff',
-        borderRadius: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
+        backgroundColor: "#fff",
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: "#ddd",
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
         padding: 10,
     },
-    headerContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+    header: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: 10,
     },
-    productInfoContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+    productInfo: {
+        flexDirection: "row",
+        alignItems: "center",
     },
-    productImageContainer: {
+    productImage: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#ddd',
-        alignItems: 'center',
-        justifyContent: 'center',
         marginRight: 10,
     },
-    productImageText: {
-        color: '#888',
-    },
     productName: {
-        fontWeight: 'bold',
+        fontWeight: "bold",
+        fontSize: 16,
     },
     closeButton: {
-        padding: 5,
+        fontSize: 20,
+        color: "#888",
     },
     messageContainer: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 5,
+        maxHeight: 200,
+        marginBottom: 10,
     },
     noMessagesText: {
-        textAlign: 'center',
-        color: '#888',
-        marginVertical: 10,
+        color: "#888",
+        textAlign: "center",
     },
-    messageBubble: {
-        borderRadius: 8,
-        padding: 8,
+    message: {
+        padding: 10,
+        borderRadius: 10,
         marginVertical: 5,
-        maxWidth: '70%',
+        maxWidth: "75%",
     },
     userMessage: {
-        backgroundColor: '#007bff',
-        alignSelf: 'flex-end',
+        backgroundColor: "#007AFF",
+        alignSelf: "flex-end",
+        color: "#fff",
     },
-    otherMessage: {
-        backgroundColor: '#e4e6eb',
-        alignSelf: 'flex-start',
-    },
-    messageText: {
-        color: '#fff',
+    responseMessage: {
+        backgroundColor: "#f1f1f1",
+        alignSelf: "flex-start",
     },
     timestamp: {
         fontSize: 10,
-        marginTop: 4,
+        marginTop: 5,
     },
     userTimestamp: {
-        color: '#cce7ff',
-        alignSelf: 'flex-end',
+        color: "#fff",
+        textAlign: "right",
     },
-    otherTimestamp: {
-        color: '#888',
-        alignSelf: 'flex-start',
+    responseTimestamp: {
+        color: "#888",
     },
     inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 10,
+        flexDirection: "row",
+        alignItems: "center",
     },
     textInput: {
         flex: 1,
         borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 16,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
+        borderColor: "#ccc",
+        borderRadius: 10,
+        padding: 10,
+        marginRight: 10,
     },
     sendButton: {
-        marginLeft: 10,
-        backgroundColor: '#28a745',
+        backgroundColor: "#007AFF",
+        borderRadius: 10,
         padding: 10,
-        borderRadius: 16,
+    },
+    sendButtonText: {
+        color: "#fff",
+        fontWeight: "bold",
     },
 });
 

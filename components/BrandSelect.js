@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, FlatList } from "react-native";
+import {
+    View,
+    TextInput,
+    TouchableOpacity,
+    Text,
+    StyleSheet,
+    FlatList,
+} from "react-native";
 
 const BrandSelect = ({ options, value, onChange, placeholder }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -40,7 +47,10 @@ const BrandSelect = ({ options, value, onChange, placeholder }) => {
                     data={filteredOptions}
                     keyExtractor={(item) => item.value}
                     renderItem={({ item }) => (
-                        <TouchableOpacity onPress={() => handleSelectOption(item)} style={styles.optionItem}>
+                        <TouchableOpacity
+                            style={styles.optionItem}
+                            onPress={() => handleSelectOption(item)}
+                        >
                             <Text style={styles.optionText}>{item.label}</Text>
                         </TouchableOpacity>
                     )}
@@ -53,34 +63,32 @@ const BrandSelect = ({ options, value, onChange, placeholder }) => {
 
 const styles = StyleSheet.create({
     container: {
-        position: 'relative',
-    },
-    input: {
-        width: '100%',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 24,
-        backgroundColor: '#fff',
-    },
-    optionsList: {
-        position: 'absolute',
-        top: 50,
-        width: '100%',
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 16,
-        maxHeight: 200,
+        position: "relative",
         zIndex: 10,
     },
+    input: {
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 10,
+        padding: 10,
+        fontSize: 16,
+        backgroundColor: "#fff",
+    },
+    optionsList: {
+        marginTop: 5,
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 10,
+        backgroundColor: "#fff",
+        maxHeight: 200,
+    },
     optionItem: {
-        paddingVertical: 10,
-        paddingHorizontal: 16,
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "#eee",
     },
     optionText: {
-        color: '#333',
+        fontSize: 16,
     },
 });
 

@@ -1,129 +1,126 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 
 const PaymentMethod = ({
-    paymentMethod,
-    setPaymentMethod,
-    hovered,
-    setHovered,
-    isPaymentCollapsed,
-    togglePaymentCollapse
-}) => {
+                           paymentMethod,
+                           setPaymentMethod,
+                           hovered,
+                           setHovered,
+                           isPaymentCollapsed,
+                           togglePaymentCollapse,
+                       }) => {
     const paymentMethods = [
-        { value: "blik", label: "BLIK", imgSrc: "recipe5.jpeg" },
-        { value: "przelew", label: "Przelew", imgSrc: "recipe5.jpeg" },
-        { value: "paypal", label: "PayPal", imgSrc: "recipe5.jpeg" }, 
-        { value: "karta", label: "Karta płatnicza", imgSrc: "recipe5.jpeg" },
+        { value: "blik", label: "BLIK", imgSrc: require('../assets/recipe5.jpeg') },
+        { value: "przelew", label: "Przelew", imgSrc: require('../assets/recipe5.jpeg') },
+        { value: "paypal", label: "PayPal", imgSrc: require('../assets/recipe5.jpeg') },
+        { value: "karta", label: "Karta płatnicza", imgSrc: require('../assets/recipe5.jpeg') },
     ];
 
     const selectedMethod = paymentMethods.find(method => method.value === paymentMethod);
 
     return (
-        <View style={[styles.container, isPaymentCollapsed ? styles.collapsed : styles.expanded]}>
-            <View style={styles.innerContainer}>
-                <TouchableOpacity
-                    style={styles.toggleButton}
-                    onPress={togglePaymentCollapse}
-                >
-                    <FontAwesomeIcon 
-                        icon={isPaymentCollapsed ? faChevronDown : faChevronUp} 
-                        size={24} 
-                        color="#666" 
-                    />
-                </TouchableOpacity>
+        <View style={[styles.container, isPaymentCollapsed && styles.collapsed]}>
+            <TouchableOpacity
+                style={styles.collapseButton}
+                onPress={togglePaymentCollapse}
+            >
+                <Text style={styles.collapseButtonText}>
+                    {isPaymentCollapsed ? '+' : '-'}
+                </Text>
+            </TouchableOpacity>
 
-                <Text style={styles.title}>Sposób płatności</Text>
+            <Text style={styles.title}>Sposób płatności</Text>
 
-                {isPaymentCollapsed && selectedMethod && (
-                    <Text style={styles.selectedMethod}>Typ: {selectedMethod.label}</Text>
-                )}
+            {isPaymentCollapsed && selectedMethod && (
+                <Text style={styles.selectedMethodText}>
+                    Typ: {selectedMethod.label}
+                </Text>
+            )}
 
-                {!isPaymentCollapsed && (
-                    <View style={styles.paymentMethodsContainer}>
-                        {paymentMethods.map((method) => (
-                            <TouchableOpacity
-                                key={method.value}
-                                style={[
-                                    styles.paymentMethod,
-                                    hovered === method.value ? styles.hovered : null
-                                ]}
-                                onPress={() => setPaymentMethod(method.value)}
-                                onMouseEnter={() => setHovered(method.value)}
-                                onMouseLeave={() => setHovered(null)}
-                            >
-                                <Image source={{ uri: method.imgSrc }} style={styles.methodImage} />
-                                <Text style={styles.methodLabel}>{method.label}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                )}
-            </View>
+            {!isPaymentCollapsed && (
+                <View style={styles.paymentMethodsContainer}>
+                    {paymentMethods.map((method) => (
+                        <TouchableOpacity
+                            key={method.value}
+                            style={[
+                                styles.methodContainer,
+                                hovered === method.value && styles.hovered,
+                            ]}
+                            onPress={() => setPaymentMethod(method.value)}
+                            onMouseEnter={() => setHovered(method.value)}
+                            onMouseLeave={() => setHovered(null)}
+                        >
+                            <Image source={method.imgSrc} style={styles.methodImage} />
+                            <Text style={styles.methodLabel}>{method.label}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        width: '100%',
-        maxWidth: 600,
-        backgroundColor: '#fff',
-        borderRadius: 20,
+        backgroundColor: 'white',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        borderRadius: 24,
+        padding: 20,
+        marginTop: 16,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-        elevation: 5,
-        marginTop: 20,
-        alignSelf: 'center',
-        transition: 'all 0.3s ease',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 4,
     },
     collapsed: {
         height: 80,
+        justifyContent: 'center',
     },
-    expanded: {
-        height: 'auto',
-    },
-    innerContainer: {
-        padding: 20,
-    },
-    toggleButton: {
+    collapseButton: {
         position: 'absolute',
-        top: 10,
-        right: 10,
+        top: 16,
+        right: 16,
+    },
+    collapseButtonText: {
+        fontSize: 18,
+        color: '#4b5563',
     },
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 10,
+        marginBottom: 8,
+        color: '#1f2937',
     },
-    selectedMethod: {
+    selectedMethodText: {
         fontSize: 16,
-        color: '#444',
+        color: '#6b7280',
+        marginTop: 8,
     },
     paymentMethodsContainer: {
-        marginTop: 20,
+        marginTop: 16,
     },
-    paymentMethod: {
+    methodContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 15,
-        padding: 10,
-        borderRadius: 10,
-        borderColor: '#ddd',
-        borderWidth: 1,
+        padding: 8,
+        marginBottom: 12,
+        borderBottomWidth: 1,
+        borderColor: '#e5e7eb',
+        borderRadius: 16,
     },
     hovered: {
-        backgroundColor: '#f0f0f0',
+        backgroundColor: '#f3f4f6',
     },
     methodImage: {
         width: 40,
         height: 40,
-        marginRight: 10,
+        marginRight: 12,
     },
     methodLabel: {
         fontSize: 16,
+        color: '#1f2937',
     },
 });
 

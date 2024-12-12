@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ImageBackground,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const Registration = () => {
@@ -11,243 +19,246 @@ const Registration = () => {
   const navigation = useNavigation();
 
   const handleRegister = () => {
-    const joinDate = new Date().toISOString(); 
-    // Simulate saving data to local storage (use AsyncStorage for real apps)
-    console.log('Zapisano dane:', { login, email, password, joinDate });
-    Alert.alert("Rejestracja", "Rejestracja zakończona pomyślnie");
-    navigation.navigate('PersonDetails');
+    const joinDate = new Date().toISOString();
+    console.log({ login, email, password, joinDate });
+
+    Alert.alert('Registration Successful', 'You have been registered successfully!', [
+      {
+        text: 'OK',
+        onPress: () => navigation.navigate('PersonDetails', { formData: { login, email } }),
+      },
+    ]);
   };
 
   return (
-    <View style={styles.container}>
-      {/* Sekcja z obrazem */}
-      <View style={styles.imageContainer}>
-        <Image
-          source={require('../assets/pexels-cottonbro-4068314.jpg')}
-          style={styles.backgroundImage}
-        />
-        <View style={styles.overlay}>
-          <Text style={styles.overlayText}>EcoSwap</Text>
-        </View>
-      </View>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <ImageBackground
+            source={require('../assets/4881822.jpg')}
+            style={styles.backgroundImage}
+            imageStyle={styles.imageStyle}
+        >
+          <View style={styles.overlay} />
+        </ImageBackground>
+        <View style={styles.formContainer}>
+          <Text style={styles.brandText}>EcoSwap</Text>
+          <Text style={styles.titleText}>Zarejestruj się</Text>
+          <Text style={styles.subtitleText}>Utwórz swoje konto:</Text>
 
-      {/* Sekcja formularza */}
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>EcoSwap</Text>
-        <Text style={styles.headerText}>Zarejestruj się!</Text>
-        <Text style={styles.subHeaderText}>Utwórz swoje konto:</Text>
-        
-        {/* Pole login */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Login</Text>
-          <TextInput
-            style={styles.input}
-            value={login}
-            onChangeText={setLogin}
-            placeholder="Wpisz login"
-          />
-        </View>
-        
-        {/* Pole e-mail */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>E-mail</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Wpisz e-mail"
-          />
-        </View>
-        
-        {/* Pole hasło */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Hasło</Text>
-          <View style={styles.passwordContainer}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Login</Text>
             <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Wpisz hasło"
-              secureTextEntry={!showPassword}
+                style={styles.input}
+                value={login}
+                onChangeText={setLogin}
+                placeholder="Wpisz login"
             />
-            <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
-              <Icon
-                name={showPassword ? 'eye-slash' : 'eye'}
-                size={20}
-                color="gray"
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>E-mail</Text>
+            <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Wpisz e-mail"
+                keyboardType="email-address"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Hasło</Text>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                  style={styles.input}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Wpisz hasło"
+                  secureTextEntry={!showPassword}
               />
+              <TouchableOpacity
+                  onPress={() => setShowPassword((prev) => !prev)}
+                  style={styles.showPasswordButton}
+              >
+                <Text style={styles.showPasswordText}>{showPassword ? '👁️' : '🙈'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
+            <Text style={styles.registerButtonText}>Zarejestruj się</Text>
+          </TouchableOpacity>
+
+          <View style={styles.orContainer}>
+            <View style={styles.line} />
+            <Text style={styles.orText}>lub zarejestruj się przez</Text>
+            <View style={styles.line} />
+          </View>
+
+          <View style={styles.socialButtonsContainer}>
+            <TouchableOpacity style={[styles.socialButton, styles.googleButton]}>
+              <Text style={styles.socialButtonText}>G</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.socialButton, styles.facebookButton]}>
+              <Text style={styles.socialButtonText}>f</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.socialButton, styles.instagramButton]}>
+              <Text style={styles.socialButtonText}>📸</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Masz już konto?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.loginLink}> Zaloguj się</Text>
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Przycisk rejestracji */}
-        <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
-          <Text style={styles.registerButtonText}>Zarejestruj się</Text>
-        </TouchableOpacity>
-
-        {/* Linie podziału */}
-        <View style={styles.orContainer}>
-          <View style={styles.divider} />
-          <Text style={styles.orText}>lub zarejestruj się przez</Text>
-          <View style={styles.divider} />
-        </View>
-
-        {/* Przyciski rejestracji z social media */}
-        <View style={styles.socialButtonsContainer}>
-          <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#DB4437' }]}>
-            <Icon name="google" size={24} color="white" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4267B2' }]}>
-            <Icon name="facebook" size={24} color="white" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#C13584' }]}>
-            <Icon name="instagram" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Link do logowania */}
-        <View style={styles.loginContainer}>
-          <Text style={styles.loginText}>Masz już konto?</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.loginLink}>Zaloguj się</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+      </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  imageContainer: {
-    flex: 1,
-    display: 'none', // Można to zmienić na 'flex: 1' w przypadku dużych ekranów.
-    position: 'relative',
+  scrollContainer: {
+    flexGrow: 1,
+    backgroundColor: '#fff',
   },
   backgroundImage: {
     width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+    height: 300,
+    justifyContent: 'flex-end',
+  },
+  imageStyle: {
+    resizeMode: 'cover', // Ensures the image fills the container while maintaining aspect ratio
   },
   overlay: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  overlayText: {
-    fontSize: 48,
-    color: 'white',
-    fontFamily: 'DancingScript-Regular',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Adds a dark overlay for better text visibility
   },
   formContainer: {
-    flex: 1,
-    padding: 16,
-    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    marginTop: -50,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
   },
-  title: {
-    fontSize: 48,
-    color: '#38a169',
-    textAlign: 'center',
-    fontFamily: 'DancingScript-Regular',
-    marginBottom: 16,
-  },
-  headerText: {
-    fontSize: 28,
+  brandText: {
+    fontSize: 40,
     fontWeight: 'bold',
-    color: '#1e3a8a',
-    marginBottom: 8,
+    color: '#28a745',
+    textAlign: 'center',
+    fontFamily: 'Dancing Script, cursive',
+    marginBottom: 10,
   },
-  subHeaderText: {
+  titleText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#007bff',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  subtitleText: {
     fontSize: 16,
-    color: '#4b5563',
-    marginBottom: 16,
+    color: '#6c757d',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: 15,
   },
   label: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#4b5563',
-    marginBottom: 4,
+    fontSize: 14,
+    color: '#6c757d',
+    marginBottom: 5,
   },
   input: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#d1d5db',
-    paddingVertical: 8,
+    height: 45,
+    borderWidth: 1,
+    borderColor: '#ced4da',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#f9f9f9',
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#d1d5db',
-    paddingVertical: 8,
-    justifyContent: 'space-between',
+  },
+  showPasswordButton: {
+    marginLeft: 10,
+  },
+  showPasswordText: {
+    fontSize: 14,
+    color: '#6c757d',
   },
   registerButton: {
-    backgroundColor: '#38a169',
-    paddingVertical: 16,
-    borderRadius: 30,
-    alignItems: 'center',
-    marginTop: 16,
+    backgroundColor: '#28a745',
+    paddingVertical: 15,
+    borderRadius: 25,
+    marginVertical: 20,
   },
   registerButtonText: {
-    color: 'white',
+    textAlign: 'center',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
   orContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 16,
+    marginVertical: 20,
   },
-  divider: {
+  line: {
     flex: 1,
     height: 1,
-    backgroundColor: '#d1d5db',
+    backgroundColor: '#ced4da',
   },
   orText: {
-    fontSize: 14,
-    color: '#6b7280',
-    paddingHorizontal: 8,
+    marginHorizontal: 10,
+    color: '#6c757d',
   },
   socialButtonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 16,
+    justifyContent: 'space-around',
   },
   socialButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  googleButton: {
+    backgroundColor: '#dc3545',
+  },
+  facebookButton: {
+    backgroundColor: '#007bff',
+  },
+  instagramButton: {
+    backgroundColor: '#c13584',
+  },
+  socialButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   loginContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 20,
   },
   loginText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#6c757d',
   },
   loginLink: {
     fontSize: 14,
-    color: '#1e40af',
+    color: '#007bff',
     fontWeight: 'bold',
-    marginLeft: 4,
   },
 });
 

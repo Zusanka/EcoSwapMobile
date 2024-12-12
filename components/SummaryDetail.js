@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React from 'react';
+import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 
 const SummaryDetail = ({ shippingMethod, price }) => {
     const shippingCosts = {
@@ -8,14 +8,14 @@ const SummaryDetail = ({ shippingMethod, price }) => {
         inpost: 8.99,
     };
 
-    // Pobierz koszty wysyłki na podstawie wybranej metody
+    // Retrieve shipping cost based on the selected method
     const shippingCost = shippingMethod ? shippingCosts[shippingMethod] : 0;
 
-    // Upewnij się, że price i shippingCost są liczbami
-    const totalPrice = parseFloat(price) || 0; // Przekonwertuj price na liczbę
-    const totalShippingCost = parseFloat(shippingCost) || 0; // Przekonwertuj shippingCost na liczbę
+    // Ensure price and shippingCost are numbers
+    const totalPrice = parseFloat(price) || 0; // Convert price to a number
+    const totalShippingCost = parseFloat(shippingCost) || 0; // Convert shippingCost to a number
 
-    // Oblicz całkowity koszt
+    // Calculate total cost
     const totalCost = totalPrice + totalShippingCost;
 
     return (
@@ -25,11 +25,10 @@ const SummaryDetail = ({ shippingMethod, price }) => {
                 <Text style={styles.detailText}>Produkt 1: {totalPrice.toFixed(2)} zł</Text>
                 <Text style={styles.detailText}>Wysyłka: {totalShippingCost.toFixed(2)} zł</Text>
             </View>
-            <View style={styles.totalContainer}>
+            <View style={styles.total}>
                 <Text style={styles.totalText}>Razem: {totalCost.toFixed(2)} zł</Text>
             </View>
-
-            <TouchableOpacity style={styles.button} onPress={() => { /* Handle purchase confirmation here */ }}>
+            <TouchableOpacity style={styles.confirmButton}>
                 <Text style={styles.buttonText}>Potwierdź zakup</Text>
             </TouchableOpacity>
         </View>
@@ -42,48 +41,51 @@ const styles = StyleSheet.create({
         maxWidth: 400,
         backgroundColor: '#fff',
         borderRadius: 20,
+        padding: 16,
+        marginTop: 16,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-        elevation: 5,
-        marginTop: 20,
-        padding: 20,
-        alignSelf: 'center',
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 15,
+        marginBottom: 16,
+        color: '#000',
     },
     details: {
-        marginBottom: 10,
+        marginBottom: 16,
     },
     detailText: {
         fontSize: 16,
-        color: '#444',
-        marginBottom: 5,
+        color: '#333',
+        marginBottom: 8,
     },
-    totalContainer: {
-        marginBottom: 15,
+    total: {
+        marginBottom: 16,
     },
     totalText: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#111',
+        color: '#000',
     },
-    button: {
-        backgroundColor: '#28a745',
-        paddingVertical: 15,
-        borderRadius: 25,
+    confirmButton: {
+        backgroundColor: '#38A169',
+        borderRadius: 20,
+        paddingVertical: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 10,
-        transform: [{ scale: 1 }],
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
     },
     buttonText: {
-        color: '#fff',
         fontSize: 16,
+        color: '#fff',
         fontWeight: 'bold',
     },
 });
