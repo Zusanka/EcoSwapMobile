@@ -12,12 +12,14 @@ import MyAccount from './components/MyAccount';
 import Messages from './components/Messages';
 import Home from './components/Home';
 import CategoryPage from './components/CategoryPage';
+import SearchResults from "./components/SearchResults";
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
       <NavigationContainer>
+
         <Stack.Navigator initialRouteName="Home">
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Register" component={Registration} />
@@ -29,6 +31,7 @@ export default function App() {
           <Stack.Screen name="MyAccount" component={MyAccount} />
           <Stack.Screen name="Messages" component={Messages} />
           <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="SearchResults" component={SearchResults} />
           <Stack.Screen
               name="CategoryPage"
               component={CategoryPage}

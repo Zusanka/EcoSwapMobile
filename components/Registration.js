@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,32 +8,76 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const Registration = () => {
-  const [login, setLogin] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [login, setLogin] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
 
-  const handleRegister = () => {
-    const joinDate = new Date().toISOString();
-    console.log({ login, email, password, joinDate });
+  const handleRegister = async () => {
+    try {
+      console.log("Rozpoczęcie procesu rejestracji...");
+      console.log("Dane do wysłania:", {
+        username: login,
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+        phoneNumber: phoneNumber,
+      });
 
-    Alert.alert('Registration Successful', 'You have been registered successfully!', [
-      {
-        text: 'OK',
-        onPress: () => navigation.navigate('PersonDetails', { formData: { login, email } }),
-      },
-    ]);
+      const response = await fetch("http://192.168.1.108:8080/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: login,
+          email: email,
+          password: password,
+          firstName: firstName,
+          lastName: lastName,
+          phoneNumber: phoneNumber,
+        }),
+      });
+
+      console.log("Odpowiedź z serwera:", response);
+
+      if (response.ok) {
+        const data = await response.text(); // Obsługuje wiadomość zwrotną z backendu
+        console.log("Rejestracja przebiegła pomyślnie:", data);
+
+        Alert.alert("Sukces", data, [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("Login"),
+          },
+        ]);
+      } else {
+        const errorData = await response.text();
+        console.error("Błąd odpowiedzi serwera:", errorData);
+
+        Alert.alert("Błąd rejestracji", errorData || "Nieprawidłowe dane");
+      }
+    } catch (error) {
+      console.error("Błąd połączenia z serwerem:", error);
+
+      Alert.alert("Błąd", "Nie udało się połączyć z serwerem");
+    }
   };
+
 
   return (
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <ImageBackground
-            source={require('../assets/4881822.jpg')}
+            source={require("../assets/4881822.jpg")}
             style={styles.backgroundImage}
             imageStyle={styles.imageStyle}
         >
@@ -79,9 +123,42 @@ const Registration = () => {
                   onPress={() => setShowPassword((prev) => !prev)}
                   style={styles.showPasswordButton}
               >
-                <Text style={styles.showPasswordText}>{showPassword ? '👁️' : '🙈'}</Text>
+                <Text style={styles.showPasswordText}>
+                  {showPassword ? "👁️" : "🙈"}
+                </Text>
               </TouchableOpacity>
             </View>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Imię</Text>
+            <TextInput
+                style={styles.input}
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholder="Wpisz imię"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Nazwisko</Text>
+            <TextInput
+                style={styles.input}
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder="Wpisz nazwisko"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Numer telefonu</Text>
+            <TextInput
+                style={styles.input}
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                placeholder="Wpisz numer telefonu"
+                keyboardType="phone-pad"
+            />
           </View>
 
           <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
@@ -108,7 +185,7 @@ const Registration = () => {
 
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Masz już konto?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
               <Text style={styles.loginLink}> Zaloguj się</Text>
             </TouchableOpacity>
           </View>

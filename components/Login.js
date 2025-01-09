@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = () => {
   const [login, setLogin] = useState("");
@@ -17,9 +18,10 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
 
+
   const handleLogin = async () => {
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("http://192.168.1.108:8080/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -29,13 +31,12 @@ const Login = () => {
 
       if (response.ok) {
         const data = await response.json();
-
+        await AsyncStorage.setItem("userToken", JSON.stringify(data));
+        // Zapisujemy token użytkownika
         // Wyświetlenie powiadomienia o sukcesie
         Alert.alert("Sukces", "Zalogowano pomyślnie!");
-
         // Przechowanie JWT tokenu (możesz użyć np. AsyncStorage do zapisu)
         // AsyncStorage.setItem('userToken', data.token);
-
         // Przejście na ekran główny lub inny
         navigation.navigate("Home", { user: data });
       } else {
@@ -123,7 +124,7 @@ const Login = () => {
 
           <View style={styles.registerContainer}>
             <Text style={styles.registerText}>Nie masz jeszcze konta?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Registration")}>
+            <TouchableOpacity onPress={() => navigation.navigate("Register")}>
               <Text style={styles.registerLink}>Zarejestruj się</Text>
             </TouchableOpacity>
           </View>

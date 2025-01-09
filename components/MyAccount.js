@@ -2,269 +2,215 @@ import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
-    TextInput,
     TouchableOpacity,
     Image,
     StyleSheet,
     ScrollView,
+    Alert,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import PersonalDetails from "./PersonalDetails";
 
 const MyAccount = () => {
-    const [images, setImages] = useState([]);
-    const [login, setLogin] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
-    const [surname, setSurname] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [street, setStreet] = useState("");
-    const [houseNumber, setHouseNumber] = useState("");
-    const [apartmentNumber, setApartmentNumber] = useState("");
-    const [postalCode, setPostalCode] = useState("");
-    const [city, setCity] = useState("");
-    const [cardNumber, setCardNumber] = useState("");
-    const [cvvNumber, setCvvNumber] = useState("");
-    const [expirationDate, setExpirationDate] = useState("");
-    const [joinDate, setJoinDate] = useState("");
-    const [activeTab, setActiveTab] = useState("personalData");
-    const [isEditing, setIsEditing] = useState(false);
+    const [userData, setUserData] = useState(null);
+    const [profilePicture, setProfilePicture] = useState(null);
+    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [address, setAddress] = useState({
+        streetName: "",
+        houseNumber: "",
+        apartmentNumber: "",
+        postalCode: "",
+        city: "",
+    });
 
     useEffect(() => {
-        const savedLogin = "user123";
-        const savedEmail = "example@email.com";
-        const savedJoinDate = "2024-01-01";
-        if (savedLogin) setLogin(savedLogin);
-        if (savedEmail) setEmail(savedEmail);
-        if (savedJoinDate) setJoinDate(savedJoinDate);
+        fetchUserData();
     }, []);
 
-    const handleToggleEdit = () => setIsEditing(!isEditing);
+    const fetchUserData = async () => {
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) {
+                Alert.alert("Błąd", "Brak tokena autoryzacyjnego.");
+                return;
+            }
 
-    const handleSave = () => {
-        // Save data logic
-        setIsEditing(false);
+            const userInfo = JSON.parse(token);
+
+            const response = await fetch(`http://192.168.1.108:8080/api/users/username/${userInfo.username}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${userInfo.token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Błąd pobierania danych użytkownika.");
+            }
+
+            const data = await response.json();
+            setUserData(data);
+
+            if (data.address) {
+                setAddress({
+                    streetName: data.address.street || "",
+                    houseNumber: data.address.houseNumber || "",
+                    apartmentNumber: data.address.apartmentNumber || "",
+                    postalCode: data.address.postalCode || "",
+                    city: data.address.city || "",
+                });
+            }
+
+            fetchProfilePicture(data.userId, userInfo.token);
+        } catch (error) {
+            console.error("Błąd pobierania danych użytkownika:", error);
+            Alert.alert("Błąd", "Nie udało się pobrać danych użytkownika.");
+        }
     };
 
-    const handleCardNumberChange = (value) => {
-        const formattedValue = value
-            .replace(/\D/g, "")
-            .slice(0, 16)
-            .replace(/(\d{4})(?=\d)/g, "$1 ");
-        setCardNumber(formattedValue);
+    const fetchProfilePicture = async (userId, token) => {
+        try {
+            const response = await fetch(`http://192.168.1.108:8080/api/users/${userId}/profile-picture`, {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` },
+            });
+
+            if (response.ok) {
+                const imageData = await response.blob();
+                const reader = new FileReader();
+                reader.onloadend = () => setProfilePicture(reader.result);
+                reader.readAsDataURL(imageData);
+            }
+        } catch (error) {
+            console.error("Błąd pobierania zdjęcia profilowego:", error);
+        }
     };
 
-    const handleExpirationDateChange = (value) => {
-        const formattedValue = value.replace(/[^0-9]/g, "").slice(0, 4);
-        const formatted = formattedValue.replace(/(\d{2})/, "$1/");
-        setExpirationDate(formatted);
+    const handleSelectProfilePicture = async () => {
+        try {
+            let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permissionResult.granted) {
+                Alert.alert("Brak uprawnień", "Musisz nadać aplikacji dostęp do zdjęć.");
+                return;
+            }
+
+            let pickerResult = await ImagePicker.launchImageLibraryAsync({
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+            });
+
+            if (!pickerResult.canceled) {
+                setProfilePicture(pickerResult.assets[0].uri);
+                uploadProfilePicture(pickerResult.assets[0].uri);
+            }
+        } catch (error) {
+            console.error("Błąd wyboru zdjęcia:", error);
+        }
+    };
+
+    const uploadProfilePicture = async (imageUri) => {
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) {
+                Alert.alert("Błąd", "Brak tokena autoryzacyjnego.");
+                return;
+            }
+
+            const userInfo = JSON.parse(token);
+            const base64Image = await FileSystem.readAsStringAsync(imageUri, { encoding: FileSystem.EncodingType.Base64 });
+
+            if (!base64Image) {
+                Alert.alert("Błąd", "Nie udało się przetworzyć obrazu.");
+                return;
+            }
+
+            const response = await fetch(`http://192.168.1.108:8080/api/users/${userData.userId}/profile-picture`, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `Bearer ${userInfo.token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ profilePicture: base64Image }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Błąd podczas aktualizacji zdjęcia.");
+            }
+
+            Alert.alert("Sukces", "Zdjęcie profilowe zostało zaktualizowane.");
+            fetchUserData();
+        } catch (error) {
+            console.error("Błąd aktualizacji zdjęcia:", error);
+            Alert.alert("Błąd", "Nie udało się zaktualizować zdjęcia.");
+        }
     };
 
     return (
         <View style={styles.container}>
             <ScrollView>
                 <View style={styles.header}>
-                    <TouchableOpacity
-                        style={styles.editButton}
-                        onPress={handleToggleEdit}
-                    >
-                        <FontAwesome name={isEditing ? "times" : "edit"} size={24} color="#fff" />
+                    <TouchableOpacity style={styles.editIcon} onPress={handleSelectProfilePicture}>
+                        <FontAwesome name="camera" size={20} color="#fff" />
                     </TouchableOpacity>
+
                     <View style={styles.imageContainer}>
-                        {images.length ? (
-                            <Image source={{ uri: images[0] }} style={styles.image} />
+                        {profilePicture ? (
+                            <Image source={{ uri: profilePicture }} style={styles.image} />
                         ) : (
-                            <Text style={styles.noImageText}>Brak zdjęcia</Text>
+                            <FontAwesome name="user-circle" size={80} color="#fff" />
                         )}
                     </View>
-                    <Text style={styles.login}>Login: {login}</Text>
-                    <Text style={styles.joinDate}>
-                        Data dołączenia: {joinDate ? joinDate : "Brak danych"}
-                    </Text>
+
+                    <Text style={styles.login}>Login: {userData?.username}</Text>
+                    <Text style={styles.joinDate}>Dołączył: {userData?.createdAt}</Text>
                 </View>
 
-                <View style={styles.tabs}>
-                    <TouchableOpacity
-                        style={[
-                            styles.tabButton,
-                            activeTab === "personalData" && styles.activeTab,
-                        ]}
-                        onPress={() => setActiveTab("personalData")}
-                    >
-                        <Text style={styles.tabText}>Dane osobowe</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.tabButton,
-                            activeTab === "address" && styles.activeTab,
-                        ]}
-                        onPress={() => setActiveTab("address")}
-                    >
-                        <Text style={styles.tabText}>Adres zamieszkania</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[
-                            styles.tabButton,
-                            activeTab === "cards" && styles.activeTab,
-                        ]}
-                        onPress={() => setActiveTab("cards")}
-                    >
-                        <Text style={styles.tabText}>Moje karty</Text>
-                    </TouchableOpacity>
-                </View>
+                <PersonalDetails
+                    isCollapsed={isCollapsed}
+                    toggleCollapse={() => setIsCollapsed(!isCollapsed)}
+                    name={userData?.firstName}
+                    surname={userData?.lastName}
+                    phoneNumber={userData?.phoneNumber}
+                    streetName={address.streetName}
+                    houseNumber={address.houseNumber}
+                    apartmentNumber={address.apartmentNumber}
+                    postalCode={address.postalCode}
+                    city={address.city}
+                />
 
-                <View style={styles.content}>
-                    {activeTab === "personalData" && (
-                        <View>
-                            <Text style={styles.label}>E-mail:</Text>
-                            {isEditing ? (
-                                <TextInput
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    style={styles.input}
-                                />
-                            ) : (
-                                <Text style={styles.value}>{email}</Text>
-                            )}
-                        </View>
-                    )}
-
-                    {activeTab === "address" && (
-                        <View>
-                            <Text style={styles.label}>Ulica:</Text>
-                            {isEditing ? (
-                                <TextInput
-                                    value={street}
-                                    onChangeText={setStreet}
-                                    style={styles.input}
-                                />
-                            ) : (
-                                <Text style={styles.value}>{street}</Text>
-                            )}
-                        </View>
-                    )}
-
-                    {activeTab === "cards" && (
-                        <View>
-                            <Text style={styles.label}>Numer Karty:</Text>
-                            {isEditing ? (
-                                <TextInput
-                                    value={cardNumber}
-                                    onChangeText={handleCardNumberChange}
-                                    style={styles.input}
-                                />
-                            ) : (
-                                <Text style={styles.value}>{cardNumber}</Text>
-                            )}
-                        </View>
-                    )}
-
-                    {isEditing && (
-                        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                            <FontAwesome name="save" size={18} color="#fff" />
-                            <Text style={styles.saveButtonText}>Zapisz zmiany</Text>
-                        </TouchableOpacity>
-                    )}
-                </View>
+                <TouchableOpacity style={styles.saveButton}>
+                    <Text style={styles.saveButtonText}>Zapisz zmiany</Text>
+                </TouchableOpacity>
             </ScrollView>
         </View>
     );
 };
 
+// ✅ **Dodany brakujący obiekt `styles`**
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#f8f8f8",
-    },
-    header: {
-        alignItems: "center",
-        backgroundColor: "#007bff",
-        paddingVertical: 20,
-        paddingHorizontal: 10,
-    },
-    editButton: {
-        position: "absolute",
-        top: 20,
-        right: 20,
-        backgroundColor: "#007bff",
-        borderRadius: 50,
-        padding: 10,
-    },
-    imageContainer: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        overflow: "hidden",
-        backgroundColor: "#ccc",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    image: {
-        width: "100%",
-        height: "100%",
-    },
-    noImageText: {
-        color: "#666",
-    },
-    login: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: "#fff",
-        marginTop: 10,
-    },
-    joinDate: {
-        fontSize: 14,
-        color: "#ddd",
-    },
-    tabs: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        backgroundColor: "#fff",
-        borderBottomWidth: 1,
-        borderColor: "#ccc",
-    },
-    tabButton: {
-        paddingVertical: 10,
-    },
-    tabText: {
-        fontSize: 16,
-        color: "#007bff",
-    },
-    activeTab: {
-        borderBottomWidth: 2,
-        borderBottomColor: "#007bff",
-    },
-    content: {
-        padding: 20,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: "bold",
-        marginBottom: 5,
-    },
-    value: {
-        fontSize: 16,
-        color: "#555",
-        marginBottom: 15,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 5,
-        padding: 10,
-        marginBottom: 15,
-    },
+    container: { flex: 1, backgroundColor: "#f8f8f8" },
+    header: { alignItems: "center", paddingVertical: 20, backgroundColor: "#28a745" },
+    editIcon: { position: "absolute", top: 10, right: 10, padding: 10, borderRadius: 20, backgroundColor: "#007AFF" },
+    imageContainer: { width: 100, height: 100, borderRadius: 50, overflow: "hidden", backgroundColor: "#ccc" },
+    image: { width: "100%", height: "100%" },
+    login: { fontSize: 18, fontWeight: "bold", color: "#fff", marginTop: 10 },
+    joinDate: { fontSize: 14, color: "#ddd" },
     saveButton: {
-        backgroundColor: "#007bff",
-        borderRadius: 5,
-        padding: 15,
+        backgroundColor: "#28a745",
+        paddingVertical: 15,
+        borderRadius: 10,
         alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "row",
+        margin: 20,
     },
     saveButtonText: {
         color: "#fff",
-        marginLeft: 5,
+        fontSize: 16,
+        fontWeight: "bold",
     },
 });
 

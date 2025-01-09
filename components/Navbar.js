@@ -1,99 +1,75 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
-import ChatWindow from './ChatWindow';
+import React, { useState } from "react";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet
+} from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
 
 const Navbar = () => {
-    const [isChatOpen, setIsChatOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [searchType, setSearchType] = useState('item');
-    const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+    const navigation = useNavigation();
+    const [searchQuery, setSearchQuery] = useState("");
 
-    const toggleChat = () => {
-        setIsChatOpen(!isChatOpen);
+    const handleLogout = async () => {
+        await AsyncStorage.removeItem("userToken");
+        navigation.replace("Home");
     };
 
-    const toggleSearchDropdown = () => {
-        setIsSearchDropdownOpen(!isSearchDropdownOpen);
-    };
-
-    const handleSearchTypeChange = (type) => {
-        setSearchType(type);
-        setIsSearchDropdownOpen(false);
-    };
-
-    const handleSearchSubmit = () => {
-        console.log('Search query:', searchQuery);
-        console.log('Search type:', searchType);
+    const handleSearch = () => {
+        if (searchQuery.trim().length > 0) {
+            navigation.navigate("SearchResults", { query: searchQuery });
+            setSearchQuery("");
+        }
     };
 
     return (
         <View style={styles.navbar}>
             <Text style={styles.logo}>EcoSwap</Text>
 
+            {/* 🔍 Pole wyszukiwania */}
             <View style={styles.searchContainer}>
-                <TouchableOpacity style={styles.searchTypeButton} onPress={toggleSearchDropdown}>
-                    <FontAwesome
-                        name={searchType === 'user' ? 'user' : 'box'}
-                        size={18}
-                        color="white"
-                    />
-                </TouchableOpacity>
-                {isSearchDropdownOpen && (
-                    <View style={styles.dropdown}>
-                        <TouchableOpacity
-                            style={styles.dropdownItem}
-                            onPress={() => handleSearchTypeChange('user')}
-                        >
-                            <FontAwesome name="user" size={16} color="white" />
-                            <Text style={styles.dropdownText}>User</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.dropdownItem}
-                            onPress={() => handleSearchTypeChange('item')}
-                        >
-                            <FontAwesome name="box" size={16} color="white" />
-                            <Text style={styles.dropdownText}>Item</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
                 <TextInput
                     style={styles.searchInput}
-                    placeholder="Search..."
+                    placeholder="Szukaj rzeczy lub użytkownika..."
                     value={searchQuery}
                     onChangeText={setSearchQuery}
-                    onSubmitEditing={handleSearchSubmit}
+                    returnKeyType="search"
+                    onSubmitEditing={handleSearch}
                 />
-                <FontAwesome name="search" size={16} color="#888" style={styles.searchIcon} />
+                <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+                    <FontAwesome name="search" size={20} color="#fff" />
+                </TouchableOpacity>
             </View>
 
+            {/* 🔹 Ikony */}
             <View style={styles.iconContainer}>
-                <TouchableOpacity onPress={toggleChat} style={styles.iconButton}>
-                    <FontAwesome name="comment" size={24} color="#555" />
-                </TouchableOpacity>
                 <TouchableOpacity style={styles.iconButton}>
                     <FontAwesome name="heart" size={24} color="red" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.registerButton}>
-                    <Text style={styles.registerButtonText}>Załóż konto</Text>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate("MyAccount")}>
+                    <FontAwesome name="user" size={24} color="#28a745" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+                    <Text style={styles.logoutButtonText}>Wyloguj</Text>
                 </TouchableOpacity>
             </View>
-
-            <Modal visible={isChatOpen} animationType="slide" transparent={true}>
-                <ChatWindow onClose={toggleChat} />
-            </Modal>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     navbar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 10,
-        backgroundColor: '#fff',
-        shadowColor: '#000',
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        backgroundColor: "#fff",
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 4,
@@ -101,69 +77,49 @@ const styles = StyleSheet.create({
     },
     logo: {
         fontSize: 20,
-        fontWeight: 'bold',
-        color: '#28a745',
-        fontFamily: 'Dancing Script',
+        fontWeight: "bold",
+        color: "#28a745",
+        fontFamily: "Dancing Script",
+        flex: 1,
+        textAlign: "left",
     },
     searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#f1f1f1",
+        borderRadius: 20,
+        flex: 2,
         marginHorizontal: 10,
-        position: 'relative',
-    },
-    searchTypeButton: {
-        backgroundColor: '#28a745',
-        padding: 8,
-        borderTopLeftRadius: 20,
-        borderBottomLeftRadius: 20,
-    },
-    dropdown: {
-        position: 'absolute',
-        top: 40,
-        left: 0,
-        backgroundColor: '#28a745',
-        borderRadius: 8,
-        zIndex: 10,
-        padding: 8,
-    },
-    dropdownItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 8,
-    },
-    dropdownText: {
-        color: 'white',
-        marginLeft: 8,
     },
     searchInput: {
         flex: 1,
-        backgroundColor: '#f1f1f1',
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        fontSize: 16,
+    },
+    searchButton: {
+        backgroundColor: "#28a745",
         padding: 8,
         borderTopRightRadius: 20,
         borderBottomRightRadius: 20,
-        paddingLeft: 12,
-    },
-    searchIcon: {
-        position: 'absolute',
-        right: 10,
     },
     iconContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
     },
     iconButton: {
         marginHorizontal: 8,
     },
-    registerButton: {
-        backgroundColor: '#28a745',
+    logoutButton: {
+        backgroundColor: "#dc3545",
         paddingVertical: 6,
-        paddingHorizontal: 16,
+        paddingHorizontal: 12,
         borderRadius: 20,
+        marginLeft: 8,
     },
-    registerButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
+    logoutButtonText: {
+        color: "#fff",
+        fontWeight: "bold",
     },
 });
 
