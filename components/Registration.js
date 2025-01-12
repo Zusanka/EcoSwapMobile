@@ -19,6 +19,7 @@ const Registration = () => {
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const navigation = useNavigation();
 
   const handleRegister = async () => {
@@ -48,10 +49,8 @@ const Registration = () => {
         }),
       });
 
-      console.log("Odpowiedź z serwera:", response);
-
       if (response.ok) {
-        const data = await response.text(); // Obsługuje wiadomość zwrotną z backendu
+        const data = await response.text();
         console.log("Rejestracja przebiegła pomyślnie:", data);
 
         Alert.alert("Sukces", data, [
@@ -68,11 +67,9 @@ const Registration = () => {
       }
     } catch (error) {
       console.error("Błąd połączenia z serwerem:", error);
-
       Alert.alert("Błąd", "Nie udało się połączyć z serwerem");
     }
   };
-
 
   return (
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -194,148 +191,149 @@ const Registration = () => {
   );
 };
 
+// ===== STYLES =====
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   backgroundImage: {
-    width: '100%',
+    width: "100%",
     height: 300,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   imageStyle: {
-    resizeMode: 'cover', // Ensures the image fills the container while maintaining aspect ratio
+    resizeMode: "cover",
   },
   overlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Adds a dark overlay for better text visibility
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
   },
   formContainer: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     marginTop: -50,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 5,
   },
   brandText: {
     fontSize: 40,
-    fontWeight: 'bold',
-    color: '#28a745',
-    textAlign: 'center',
-    fontFamily: 'Dancing Script, cursive',
+    fontWeight: "bold",
+    color: "#28a745",
+    textAlign: "center",
+    fontFamily: "Dancing Script, cursive",
     marginBottom: 10,
   },
   titleText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#007bff',
+    fontWeight: "bold",
+    color: "#007bff",
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subtitleText: {
     fontSize: 16,
-    color: '#6c757d',
+    color: "#6c757d",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   inputContainer: {
     marginBottom: 15,
   },
   label: {
     fontSize: 14,
-    color: '#6c757d',
+    color: "#6c757d",
     marginBottom: 5,
   },
   input: {
     height: 45,
     borderWidth: 1,
-    borderColor: '#ced4da',
+    borderColor: "#ced4da",
     borderRadius: 10,
     paddingHorizontal: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   showPasswordButton: {
     marginLeft: 10,
   },
   showPasswordText: {
     fontSize: 14,
-    color: '#6c757d',
+    color: "#6c757d",
   },
   registerButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: "#28a745",
     paddingVertical: 15,
     borderRadius: 25,
     marginVertical: 20,
   },
   registerButtonText: {
-    textAlign: 'center',
-    color: '#fff',
+    textAlign: "center",
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   orContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 20,
   },
   line: {
     flex: 1,
     height: 1,
-    backgroundColor: '#ced4da',
+    backgroundColor: "#ced4da",
   },
   orText: {
     marginHorizontal: 10,
-    color: '#6c757d',
+    color: "#6c757d",
   },
   socialButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   socialButton: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   googleButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: "#dc3545",
   },
   facebookButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
   },
   instagramButton: {
-    backgroundColor: '#c13584',
+    backgroundColor: "#c13584",
   },
   socialButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   loginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: 20,
   },
   loginText: {
     fontSize: 14,
-    color: '#6c757d',
+    color: "#6c757d",
   },
   loginLink: {
     fontSize: 14,
-    color: '#007bff',
-    fontWeight: 'bold',
+    color: "#007bff",
+    fontWeight: "bold",
   },
 });
 

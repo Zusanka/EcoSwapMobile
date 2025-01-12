@@ -100,6 +100,7 @@ const CustomSelect = ({ options, value, onChange, placeholder }) => {
 const styles = StyleSheet.create({
     container: {
         marginBottom: 16,
+
     },
     selector: {
         padding: 10,
@@ -121,6 +122,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     modalContent: {
+        maxHeight: "80%",
         width: "80%",
         backgroundColor: "#fff",
         borderRadius: 8,
@@ -146,7 +148,7 @@ const styles = StyleSheet.create({
     closeButton: {
         marginTop: 16,
         padding: 10,
-        backgroundColor: "#007AFF",
+        backgroundColor: "#067518",
         borderRadius: 8,
     },
     closeButtonText: {

@@ -2,212 +2,271 @@ import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
+    TextInput,
     TouchableOpacity,
     Image,
-    StyleSheet,
-    ScrollView,
     Alert,
+    ScrollView,
+    ActivityIndicator,
+    StyleSheet,
 } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
-import PersonalDetails from "./PersonalDetails";
+import {
+    getUserData,
+    updateProfilePicture,
+    getProfilePicture,
+    updateDescription,
+    updateDetails,
+} from "../api/api";
 
 const MyAccount = () => {
-    const [userData, setUserData] = useState(null);
-    const [profilePicture, setProfilePicture] = useState(null);
-    const [isCollapsed, setIsCollapsed] = useState(true);
-    const [address, setAddress] = useState({
-        streetName: "",
-        houseNumber: "",
-        apartmentNumber: "",
-        postalCode: "",
-        city: "",
-    });
+    const [login, setLogin] = useState("");
+    const [email, setEmail] = useState("");
+    const [name, setName] = useState("");
+    const [surname, setSurname] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [description, setDescription] = useState("");
+    const [profileImage, setProfileImage] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [userId, setUserId] = useState(null);
+
+    const navigation = useNavigation();
 
     useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                setLoading(true);
+
+                const userStr = await AsyncStorage.getItem("user");
+                if (!userStr) throw new Error("Brak danych użytkownika");
+
+                const user = JSON.parse(userStr);
+                if (!user.id) throw new Error("Brak ID użytkownika");
+
+                setUserId(user.id);
+
+                const userData = await getUserData(user.id);
+                setLogin(userData.username || "");
+                setEmail(userData.email || "");
+                setName(userData.firstName || "");
+                setSurname(userData.lastName || "");
+                setPhoneNumber(userData.phoneNumber || "");
+                setDescription(userData.description || "");
+
+                const profilePic = await getProfilePicture(user.id);
+                if (profilePic) {
+                    setProfileImage(`data:image/jpeg;base64,${profilePic}`);
+                }
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchUserData();
     }, []);
 
-    const fetchUserData = async () => {
-        try {
-            const token = await AsyncStorage.getItem("userToken");
-            if (!token) {
-                Alert.alert("Błąd", "Brak tokena autoryzacyjnego.");
-                return;
+    const pickImage = async () => {
+        if (!userId) {
+            Alert.alert("Błąd", "Brak ID użytkownika. Zaloguj się ponownie.");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaType.IMAGE,
+            allowsEditing: true,
+            quality: 1,
+            base64: true,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            try {
+                const base64Image = result.assets[0].base64;
+                if (!base64Image) throw new Error("Błąd konwersji zdjęcia");
+
+                setProfileImage(`data:image/jpeg;base64,${base64Image}`);
+
+                await updateProfilePicture(userId, base64Image);
+                Alert.alert("Sukces", "Zdjęcie profilowe zaktualizowane.");
+            } catch (err) {
+                Alert.alert("Błąd", err.message);
             }
-
-            const userInfo = JSON.parse(token);
-
-            const response = await fetch(`http://192.168.1.108:8080/api/users/username/${userInfo.username}`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${userInfo.token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error("Błąd pobierania danych użytkownika.");
-            }
-
-            const data = await response.json();
-            setUserData(data);
-
-            if (data.address) {
-                setAddress({
-                    streetName: data.address.street || "",
-                    houseNumber: data.address.houseNumber || "",
-                    apartmentNumber: data.address.apartmentNumber || "",
-                    postalCode: data.address.postalCode || "",
-                    city: data.address.city || "",
-                });
-            }
-
-            fetchProfilePicture(data.userId, userInfo.token);
-        } catch (error) {
-            console.error("Błąd pobierania danych użytkownika:", error);
-            Alert.alert("Błąd", "Nie udało się pobrać danych użytkownika.");
         }
     };
 
-    const fetchProfilePicture = async (userId, token) => {
-        try {
-            const response = await fetch(`http://192.168.1.108:8080/api/users/${userId}/profile-picture`, {
-                method: "GET",
-                headers: { "Authorization": `Bearer ${token}` },
-            });
+    const handleSave = async () => {
+        if (!userId) {
+            Alert.alert("Błąd", "Brak ID użytkownika. Zaloguj się ponownie.");
+            return;
+        }
 
-            if (response.ok) {
-                const imageData = await response.blob();
-                const reader = new FileReader();
-                reader.onloadend = () => setProfilePicture(reader.result);
-                reader.readAsDataURL(imageData);
-            }
+        try {
+            await updateDetails(userId, name, surname, phoneNumber);
+            await updateDescription(userId, description);
+
+            Alert.alert("Sukces", "Dane zostały zapisane");
+            setIsEditing(false);
         } catch (error) {
-            console.error("Błąd pobierania zdjęcia profilowego:", error);
+            Alert.alert("Błąd", error.message);
         }
     };
 
-    const handleSelectProfilePicture = async () => {
-        try {
-            let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (!permissionResult.granted) {
-                Alert.alert("Brak uprawnień", "Musisz nadać aplikacji dostęp do zdjęć.");
-                return;
-            }
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        );
+    }
 
-            let pickerResult = await ImagePicker.launchImageLibraryAsync({
-                allowsEditing: true,
-                aspect: [1, 1],
-                quality: 1,
-            });
-
-            if (!pickerResult.canceled) {
-                setProfilePicture(pickerResult.assets[0].uri);
-                uploadProfilePicture(pickerResult.assets[0].uri);
-            }
-        } catch (error) {
-            console.error("Błąd wyboru zdjęcia:", error);
-        }
-    };
-
-    const uploadProfilePicture = async (imageUri) => {
-        try {
-            const token = await AsyncStorage.getItem("userToken");
-            if (!token) {
-                Alert.alert("Błąd", "Brak tokena autoryzacyjnego.");
-                return;
-            }
-
-            const userInfo = JSON.parse(token);
-            const base64Image = await FileSystem.readAsStringAsync(imageUri, { encoding: FileSystem.EncodingType.Base64 });
-
-            if (!base64Image) {
-                Alert.alert("Błąd", "Nie udało się przetworzyć obrazu.");
-                return;
-            }
-
-            const response = await fetch(`http://192.168.1.108:8080/api/users/${userData.userId}/profile-picture`, {
-                method: "PUT",
-                headers: {
-                    "Authorization": `Bearer ${userInfo.token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ profilePicture: base64Image }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Błąd podczas aktualizacji zdjęcia.");
-            }
-
-            Alert.alert("Sukces", "Zdjęcie profilowe zostało zaktualizowane.");
-            fetchUserData();
-        } catch (error) {
-            console.error("Błąd aktualizacji zdjęcia:", error);
-            Alert.alert("Błąd", "Nie udało się zaktualizować zdjęcia.");
-        }
-    };
+    if (error) {
+        return <Text style={styles.errorText}>{error}</Text>;
+    }
 
     return (
-        <View style={styles.container}>
-            <ScrollView>
-                <View style={styles.header}>
-                    <TouchableOpacity style={styles.editIcon} onPress={handleSelectProfilePicture}>
-                        <FontAwesome name="camera" size={20} color="#fff" />
-                    </TouchableOpacity>
-
-                    <View style={styles.imageContainer}>
-                        {profilePicture ? (
-                            <Image source={{ uri: profilePicture }} style={styles.image} />
-                        ) : (
-                            <FontAwesome name="user-circle" size={80} color="#fff" />
-                        )}
-                    </View>
-
-                    <Text style={styles.login}>Login: {userData?.username}</Text>
-                    <Text style={styles.joinDate}>Dołączył: {userData?.createdAt}</Text>
-                </View>
-
-                <PersonalDetails
-                    isCollapsed={isCollapsed}
-                    toggleCollapse={() => setIsCollapsed(!isCollapsed)}
-                    name={userData?.firstName}
-                    surname={userData?.lastName}
-                    phoneNumber={userData?.phoneNumber}
-                    streetName={address.streetName}
-                    houseNumber={address.houseNumber}
-                    apartmentNumber={address.apartmentNumber}
-                    postalCode={address.postalCode}
-                    city={address.city}
-                />
-
-                <TouchableOpacity style={styles.saveButton}>
-                    <Text style={styles.saveButtonText}>Zapisz zmiany</Text>
+        <ScrollView contentContainerStyle={styles.container}>
+            <View style={styles.imageContainer}>
+                <TouchableOpacity onPress={pickImage} style={styles.imageWrapper}>
+                    {profileImage ? (
+                        <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                    ) : (
+                        <View style={styles.placeholder}>
+                            <Text style={styles.addImageText}>Dodaj zdjęcie</Text>
+                        </View>
+                    )}
                 </TouchableOpacity>
-            </ScrollView>
-        </View>
+            </View>
+
+            <Text style={styles.label}>Login: {login}</Text>
+            <TextInput
+                value={name}
+                onChangeText={setName}
+                editable={isEditing}
+                placeholder="Imię"
+                style={styles.input}
+            />
+            <TextInput
+                value={surname}
+                onChangeText={setSurname}
+                editable={isEditing}
+                placeholder="Nazwisko"
+                style={styles.input}
+            />
+            <TextInput
+                value={email}
+                editable={false}
+                placeholder="Email"
+                style={[styles.input, styles.disabledInput]}
+            />
+            <TextInput
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                editable={isEditing}
+                placeholder="Numer telefonu"
+                style={styles.input}
+            />
+            <TextInput
+                value={description}
+                onChangeText={setDescription}
+                editable={isEditing}
+                placeholder="Opis"
+                style={[styles.input, styles.textArea]}
+                multiline
+            />
+
+            {isEditing ? (
+                <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+                    <Text style={styles.buttonText}>Zapisz</Text>
+                </TouchableOpacity>
+            ) : (
+                <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.editButton}>
+                    <Text style={styles.buttonText}>Edytuj</Text>
+                </TouchableOpacity>
+            )}
+        </ScrollView>
     );
 };
 
-// ✅ **Dodany brakujący obiekt `styles`**
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f8f8f8" },
-    header: { alignItems: "center", paddingVertical: 20, backgroundColor: "#28a745" },
-    editIcon: { position: "absolute", top: 10, right: 10, padding: 10, borderRadius: 20, backgroundColor: "#007AFF" },
-    imageContainer: { width: 100, height: 100, borderRadius: 50, overflow: "hidden", backgroundColor: "#ccc" },
-    image: { width: "100%", height: "100%" },
-    login: { fontSize: 18, fontWeight: "bold", color: "#fff", marginTop: 10 },
-    joinDate: { fontSize: 14, color: "#ddd" },
-    saveButton: {
-        backgroundColor: "#28a745",
-        paddingVertical: 15,
-        borderRadius: 10,
-        alignItems: "center",
-        margin: 20,
+    container: {
+        padding: 20,
     },
-    saveButtonText: {
+    loadingContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    errorText: {
+        color: "red",
+        textAlign: "center",
+    },
+    imageContainer: {
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    imageWrapper: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        overflow: "hidden",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#f0f0f0",
+    },
+    profileImage: {
+        width: "100%",
+        height: "100%",
+    },
+    placeholder: {
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
+    },
+    addImageText: {
+        color: "#000000",
+        fontSize: 36,
+        textAlign: "center",
+    },
+    label: {
+        fontSize: 16,
+        fontWeight: "bold",
+        marginBottom: 5,
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 10,
+        fontSize: 16,
+    },
+    disabledInput: {
+        backgroundColor: "#eee",
+    },
+    textArea: {
+        height: 80,
+    },
+    editButton: {
+        backgroundColor: "blue",
+        padding: 12,
+        borderRadius: 8,
+        alignItems: "center",
+        marginTop: 10,
+    },
+    saveButton: {
+        backgroundColor: "green",
+        padding: 12,
+        borderRadius: 8,
+        alignItems: "center",
+        marginTop: 10,
+    },
+    buttonText: {
         color: "#fff",
         fontSize: 16,
         fontWeight: "bold",

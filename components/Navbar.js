@@ -15,8 +15,15 @@ const Navbar = () => {
     const [searchQuery, setSearchQuery] = useState("");
 
     const handleLogout = async () => {
-        await AsyncStorage.removeItem("userToken");
-        navigation.replace("Home");
+        try {
+            // Usuwamy oba klucze: "token" i "user"
+            await AsyncStorage.removeItem("token");
+            await AsyncStorage.removeItem("user");
+            // Przechodzimy na Home
+            navigation.replace("Home");
+        } catch (error) {
+            console.log("Error during logout:", error);
+        }
     };
 
     const handleSearch = () => {
@@ -30,7 +37,6 @@ const Navbar = () => {
         <View style={styles.navbar}>
             <Text style={styles.logo}>EcoSwap</Text>
 
-            {/* 🔍 Pole wyszukiwania */}
             <View style={styles.searchContainer}>
                 <TextInput
                     style={styles.searchInput}
@@ -45,12 +51,14 @@ const Navbar = () => {
                 </TouchableOpacity>
             </View>
 
-            {/* 🔹 Ikony */}
             <View style={styles.iconContainer}>
                 <TouchableOpacity style={styles.iconButton}>
                     <FontAwesome name="heart" size={24} color="red" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate("MyAccount")}>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => navigation.navigate("MyAccount")}
+                >
                     <FontAwesome name="user" size={24} color="#28a745" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>

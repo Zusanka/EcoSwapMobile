@@ -20,9 +20,14 @@ const Home = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const userData = await AsyncStorage.getItem("userToken");
-      if (userData) {
-        setUser(JSON.parse(userData));
+      try {
+        const userData = await AsyncStorage.getItem("user");
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+        }
+      } catch (err) {
+        console.log("Error reading user data from AsyncStorage:", err);
       }
     };
     checkUser();
@@ -37,11 +42,9 @@ const Home = () => {
 
   return (
       <View style={styles.container}>
-        {/* Navbar tylko jeśli użytkownik jest zalogowany */}
-        {user && <Navbar onLogout={() => navigation.navigate("Home")} />}
+        {user && <Navbar />}
 
         <ScrollView contentContainerStyle={styles.contentContainer}>
-          {/* Sekcja nagłówka */}
           {!user && (
               <View style={styles.authButtonsContainer}>
                 <TouchableOpacity
@@ -75,7 +78,6 @@ const Home = () => {
             </View>
           </ImageBackground>
 
-          {/* Sekcja "Dlaczego my?" */}
           {!user && (
               <View style={styles.whyUsSection}>
                 <Text style={styles.sectionTitle}>Dlaczego my?</Text>
@@ -100,13 +102,28 @@ const Home = () => {
               </View>
           )}
 
-          {/* Sekcja z najnowszymi przedmiotami */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Ostatnio dodane</Text>
             <FlatList
                 data={[
-                  { id: 1, name: "T-shirt", dateAdded: "29.10.2024", category: "Moda", price: 29.99, brand: "Stradivarius", image: require("../assets/1.jpeg") },
-                  { id: 2, name: "Plecak z eko skóry", dateAdded: "30.10.2024", category: "Moda", price: 49.99, brand: "Zara", image: require("../assets/2.jpeg") },
+                  {
+                    id: 1,
+                    name: "T-shirt",
+                    dateAdded: "29.10.2024",
+                    category: "Moda",
+                    price: 29.99,
+                    brand: "Stradivarius",
+                    image: require("../assets/1.jpeg"),
+                  },
+                  {
+                    id: 2,
+                    name: "Plecak z eko skóry",
+                    dateAdded: "30.10.2024",
+                    category: "Moda",
+                    price: 49.99,
+                    brand: "Zara",
+                    image: require("../assets/2.jpeg"),
+                  },
                 ]}
                 keyExtractor={(item) => item.id.toString()}
                 horizontal
@@ -126,6 +143,7 @@ const Home = () => {
   );
 };
 
+// ===== STYLES =====
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -18,7 +18,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
 
-
   const handleLogin = async () => {
     try {
       const response = await fetch("http://192.168.1.108:8080/api/auth/login", {
@@ -26,32 +25,35 @@ const Login = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: login, password: password }), // Wysyłamy dane logowania
+        body: JSON.stringify({ username: login, password }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        await AsyncStorage.setItem("userToken", JSON.stringify(data));
-        // Zapisujemy token użytkownika
-        // Wyświetlenie powiadomienia o sukcesie
+        console.log("Dane z backendu po zalogowaniu:", data);
+
+        // Jeśli backend zwraca { token, id, username, email, ... }:
+        if (data.token) {
+          await AsyncStorage.setItem("token", data.token);
+        }
+        await AsyncStorage.setItem("user", JSON.stringify(data));
+
         Alert.alert("Sukces", "Zalogowano pomyślnie!");
-        // Przechowanie JWT tokenu (możesz użyć np. AsyncStorage do zapisu)
-        // AsyncStorage.setItem('userToken', data.token);
-        // Przejście na ekran główny lub inny
-        navigation.navigate("Home", { user: data });
+        navigation.navigate("Home");
       } else {
-        const errorData = await response.text(); // Obsługa wiadomości błędu
+        const errorData = await response.text();
         Alert.alert("Błąd logowania", errorData || "Nieprawidłowe dane");
       }
     } catch (error) {
       Alert.alert("Błąd", "Nie udało się połączyć z serwerem");
+      console.error(error);
     }
   };
 
   return (
       <ScrollView contentContainerStyle={styles.container}>
         <ImageBackground
-            source={require("../assets/4881822.jpg")} // Upewnij się, że ścieżka obrazu jest poprawna
+            source={require("../assets/4881822.jpg")}
             style={styles.backgroundImage}
             imageStyle={styles.imageStyle}
         >
@@ -60,6 +62,7 @@ const Login = () => {
             <Text style={styles.welcomeText}>Witaj ponownie!</Text>
           </View>
         </ImageBackground>
+
         <View style={styles.formContainer}>
           <Text style={styles.subText}>Zaloguj się przez e-mail:</Text>
 
@@ -70,7 +73,7 @@ const Login = () => {
                 placeholder="Wpisz login"
                 placeholderTextColor="#ccc"
                 value={login}
-                onChangeText={setLogin} // Wiążemy dane logowania
+                onChangeText={setLogin}
             />
           </View>
 
@@ -83,7 +86,7 @@ const Login = () => {
                   placeholderTextColor="#ccc"
                   secureTextEntry={!showPassword}
                   value={password}
-                  onChangeText={setPassword} // Wiążemy hasło
+                  onChangeText={setPassword}
               />
               <TouchableOpacity
                   style={styles.passwordToggle}
@@ -111,13 +114,19 @@ const Login = () => {
           </View>
 
           <View style={styles.socialButtonsContainer}>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: "#DB4437" }]}>
+            <TouchableOpacity
+                style={[styles.socialButton, { backgroundColor: "#DB4437" }]}
+            >
               <Text style={styles.socialButtonText}>G</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: "#4267B2" }]}>
+            <TouchableOpacity
+                style={[styles.socialButton, { backgroundColor: "#4267B2" }]}
+            >
               <Text style={styles.socialButtonText}>F</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: "#E1306C" }]}>
+            <TouchableOpacity
+                style={[styles.socialButton, { backgroundColor: "#E1306C" }]}
+            >
               <Text style={styles.socialButtonText}>I</Text>
             </TouchableOpacity>
           </View>
@@ -132,7 +141,7 @@ const Login = () => {
       </ScrollView>
   );
 };
-
+// ===== STYLES =====
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,

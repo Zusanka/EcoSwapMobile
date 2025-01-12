@@ -11,10 +11,13 @@ import {
 const BrandSelect = ({ options, value, onChange, placeholder }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [inputValue, setInputValue] = useState(value ? value.label : "");
-    const [filteredOptions, setFilteredOptions] = useState(options);
+    const [filteredOptions, setFilteredOptions] = useState([]);
 
     const handleToggle = () => {
         setIsOpen(!isOpen);
+        if (!isOpen) {
+            setFilteredOptions(options.slice(0, 5)); // Ustawienie początkowych opcji
+        }
     };
 
     const handleSelectOption = (option) => {
@@ -26,11 +29,12 @@ const BrandSelect = ({ options, value, onChange, placeholder }) => {
     const handleInputChange = (value) => {
         setInputValue(value);
 
-        // Filter options based on input value
+        // Filtracja opcji
         const filtered = options.filter((option) =>
             option.label.toLowerCase().includes(value.toLowerCase())
         );
-        setFilteredOptions(filtered);
+
+        setFilteredOptions(filtered.slice(0, 5)); // Ograniczenie do 5 elementów
     };
 
     return (
@@ -42,10 +46,10 @@ const BrandSelect = ({ options, value, onChange, placeholder }) => {
                 placeholder={placeholder}
                 style={styles.input}
             />
-            {isOpen && (
+            {isOpen && filteredOptions.length > 0 && (
                 <FlatList
                     data={filteredOptions}
-                    keyExtractor={(item) => item.value}
+                    keyExtractor={(item) => item.value.toString()}
                     renderItem={({ item }) => (
                         <TouchableOpacity
                             style={styles.optionItem}

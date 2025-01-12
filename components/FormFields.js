@@ -1,34 +1,28 @@
-import React from "react";
-import {
-    View,
-    Text,
-    TextInput,
-    StyleSheet,
-} from "react-native";
-import CustomSelect from "./CustomSelect"; // Upewnij się, że ścieżka jest poprawna
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, StyleSheet, ActivityIndicator } from "react-native";
+import CustomSelect from "./CustomSelect";
+import { getCategoriesWithSubcategories } from "../api/api"; // Import funkcji z API
 
-const FormFields = ({
-                        title,
-                        setTitle,
-                        category,
-                        setCategory,
-                        subCategory,
-                        setSubCategory,
-                        subCategories,
-                    }) => {
-    const categoryOptions = [
-        { value: "", label: "Wybierz kategorię" },
-        { value: "electronics", label: "Elektronika" },
-        { value: "fashion", label: "Moda" },
-        { value: "automotive", label: "Motoryzacja" },
-        { value: "real-estate", label: "Nieruchomości" },
-        { value: "home-garden", label: "Dom i ogród" },
-        { value: "sports", label: "Sport" },
-        { value: "books", label: "Książki" },
-        { value: "toys", label: "Zabawki" },
-        { value: "services", label: "Usługi" },
-        { value: "other", label: "Inne" },
-    ];
+const FormFields = ({ title, setTitle, category, setCategory, subCategory, setSubCategory }) => {
+    const [categories, setCategories] = useState([]);
+    const [subCategories, setSubCategories] = useState({});
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const data = await getCategoriesWithSubcategories();
+                setCategories(Object.keys(data).map((key) => ({ value: key, label: key }))); // Konwersja na [{ value, label }]
+                setSubCategories(data); // Obiekt { "fashion": ["Shoes", "Clothes"], ... }
+            } catch (error) {
+                console.error("Błąd pobierania kategorii:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -42,26 +36,32 @@ const FormFields = ({
                 />
             </View>
 
-            <Text style={styles.label}>Wybierz kategorię:</Text>
-            <CustomSelect
-                options={categoryOptions}
-                value={category}
-                onChange={setCategory}
-                placeholder="Wybierz kategorię"
-            />
-
-            {category && subCategories[category] && (
+            {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
                 <>
-                    <Text style={styles.label}>Wybierz podkategorię:</Text>
+                    <Text style={styles.label}>Wybierz kategorię:</Text>
                     <CustomSelect
-                        options={subCategories[category].map((subCat) => ({
-                            value: subCat,
-                            label: subCat,
-                        }))}
-                        value={subCategory}
-                        onChange={setSubCategory}
-                        placeholder="Wybierz podkategorię"
+                        options={categories}
+                        value={category}
+                        onChange={setCategory}
+                        placeholder="Wybierz kategorię"
                     />
+
+                    {category && subCategories[category.value] && (
+                        <>
+                            <Text style={styles.label}>Wybierz podkategorię:</Text>
+                            <CustomSelect
+                                options={subCategories[category.value].map((subCat) => ({
+                                    value: subCat,
+                                    label: subCat,
+                                }))}
+                                value={subCategory}
+                                onChange={setSubCategory}
+                                placeholder="Wybierz podkategorię"
+                            />
+                        </>
+                    )}
                 </>
             )}
         </View>

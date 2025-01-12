@@ -1,247 +1,243 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
     TextInput,
-    ScrollView,
     TouchableOpacity,
     Alert,
     StyleSheet,
+    KeyboardAvoidingView,
+    Platform,
+    FlatList,
+    TouchableWithoutFeedback,
+    Keyboard,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomSelect from "./CustomSelect";
 import ImageUploader from "./ImageUploader";
 import BrandSelect from "./BrandSelect";
 import Navbar from "./Navbar";
+import { addNewItem } from "../api/api"; // Import API
+
+const categoryOptions = [
+    { value: "electronics", label: "Elektronika" },
+    { value: "fashion", label: "Moda" },
+    { value: "automotive", label: "Motoryzacja" },
+    { value: "real_estate", label: "Nieruchomości" },
+    { value: "home_garden", label: "Dom i Ogród" },
+    { value: "sports", label: "Sport" },
+    { value: "health_beauty", label: "Zdrowie i Uroda" },
+    { value: "toys", label: "Zabawki" },
+    { value: "books", label: "Książki" },
+    { value: "music", label: "Muzyka" },
+    { value: "movies", label: "Filmy" },
+    { value: "collectibles", label: "Kolekcje" },
+    { value: "pets", label: "Zwierzęta" },
+    { value: "office_supplies", label: "Artykuły biurowe" },
+    { value: "tools", label: "Narzędzia" },
+    { value: "computers", label: "Komputery" },
+    { value: "phones", label: "Telefony" },
+    { value: "appliances", label: "AGD" },
+    { value: "games", label: "Gry" },
+    { value: "baby", label: "Dla Dzieci" },
+    { value: "jewelry", label: "Biżuteria" },
+    { value: "watches", label: "Zegarki" },
+    { value: "crafts", label: "Rękodzieło" },
+    { value: "services", label: "Usługi" },
+];
+
+
+const brandOptions = [
+    // Elektronika
+    { value: "apple", label: "Apple" },
+    { value: "samsung", label: "Samsung" },
+    { value: "sony", label: "Sony" },
+    { value: "lg", label: "LG" },
+    { value: "huawei", label: "Huawei" },
+    { value: "dell", label: "Dell" },
+    { value: "lenovo", label: "Lenovo" },
+    { value: "hp", label: "HP" },
+    { value: "bose", label: "Bose" },
+    { value: "beats", label: "Beats" },
+
+    // Odzież
+    { value: "nike", label: "Nike" },
+    { value: "adidas", label: "Adidas" },
+    { value: "puma", label: "Puma" },
+    { value: "reebok", label: "Reebok" },
+    { value: "new_balance", label: "New Balance" },
+    { value: "under_armour", label: "Under Armour" },
+    { value: "zara", label: "Zara" },
+    { value: "h&m", label: "H&M" },
+    { value: "tommy_hilfiger", label: "Tommy Hilfiger" },
+    { value: "calvin_klein", label: "Calvin Klein" },
+    { value: "ralph_lauren", label: "Ralph Lauren" },
+    { value: "guess", label: "Guess" },
+    { value: "levis", label: "Levi's" },
+
+    // Opcja dla innych marek
+    { value: "other", label: "Marka inna" },
+    { value: "none", label: "Brak" },
+];
+
+
+const conditionOptions = [
+    { value: "new_with_tag", label: "Nowy z metką" },
+    { value: "new_without_tag", label: "Nowy bez metki" },
+    { value: "very_good", label: "Bardzo dobry" },
+];
+
+const advertisementTypeOptions = [
+    { value: "free", label: "Za darmo" },
+    { value: "exchange", label: "Na wymianę" },
+    { value: "sell", label: "Sprzedaj" },
+];
 
 const AddItem = ({ navigation }) => {
     const [images, setImages] = useState([]);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [selectedValue, setSelectedValue] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedBrand, setSelectedBrand] = useState(null);
-    const [selectedCity, setSelectedCity] = useState(null);
-    const [titleError, setTitleError] = useState("");
-    const [errorMessage, setErrorMessage] = useState("");
+    const [city, setCity] = useState(""); // 🔹 Teraz jako zwykłe pole tekstowe
     const [selectedCondition, setSelectedCondition] = useState(null);
     const [selectedAdvertisementType, setSelectedAdvertisementType] = useState(null);
     const [price, setPrice] = useState("");
-    const [email, setEmail] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
+    const [user, setUser] = useState(null);
+    const [token, setToken] = useState(null);
 
-    const handleSubmit = () => {
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const storedUser = await AsyncStorage.getItem("user");
+                const storedToken = await AsyncStorage.getItem("token");
+
+                if (storedUser && storedToken) {
+                    setUser(JSON.parse(storedUser));
+                    setToken(storedToken);
+                } else {
+                    Alert.alert("Błąd", "Musisz być zalogowany, aby dodać ogłoszenie.");
+                    navigation.navigate("Login");
+                }
+            } catch (error) {
+                console.error("Błąd pobierania użytkownika:", error);
+            }
+        };
+
+        fetchUser();
+    }, []);
+
+    const handleSubmit = async () => {
+        if (!user || !token) {
+            Alert.alert("Błąd", "Nie jesteś zalogowany. Zaloguj się ponownie.");
+            navigation.navigate("Login");
+            return;
+        }
+
+        if (!title.trim() || !description.trim() || !selectedCategory || !selectedCondition || !selectedAdvertisementType || !city.trim()) {
+            Alert.alert("Błąd", "Wszystkie pola muszą być wypełnione.");
+            return;
+        }
+
         const formData = {
             title,
             description,
-            category: selectedValue?.label,
-            brand: selectedBrand?.label,
-            condition: selectedCondition?.label,
-            advertisementType: selectedAdvertisementType?.label,
-            email,
+            category: selectedCategory?.value,
+            brand: selectedBrand?.value || null,
+            condition: selectedCondition?.value,
+            advertisementType: selectedAdvertisementType?.value,
+            email: user.email,
             phoneNumber,
-            city: selectedCity?.label,
-            images: images,
-            price,
+            city: city.trim(), // 🔹 Pobieramy miasto wpisane przez użytkownika
+            images,
+            price: selectedAdvertisementType?.value === "sell" ? price : null,
+            userId: user.id,
         };
 
-        Alert.alert("Sukces", "Ogłoszenie zostało dodane");
-        navigation.navigate("ItemDetails", { formData });
-    };
-
-    const handleImageUpload = (newImages) => {
-        setImages((prevImages) => [...prevImages, ...newImages].slice(0, 6));
-    };
-
-    const handleRemoveImage = (index) => {
-        Alert.alert("Potwierdzenie", "Czy na pewno chcesz usunąć to zdjęcie?", [
-            { text: "Anuluj", style: "cancel" },
-            {
-                text: "Usuń",
-                onPress: () => {
-                    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
-                },
-            },
-        ]);
-    };
-
-    const handleDescriptionChange = (value) => {
-        setDescription(value);
-        if (value.length < 30) {
-            setErrorMessage("Opis musi mieć co najmniej 30 znaków.");
-        } else if (value.length > 200) {
-            setErrorMessage("Opis nie może przekraczać 200 znaków.");
-        } else {
-            setErrorMessage("");
+        try {
+            await addNewItem(formData, token);
+            Alert.alert("Sukces", "Ogłoszenie zostało dodane pomyślnie.");
+            navigation.navigate("Home");
+        } catch (error) {
+          console.log(error);
+            // if (error.response?.status === 401) {
+            //     Alert.alert("Błąd autoryzacji", "Twoja sesja wygasła. Zaloguj się ponownie.");
+            //     await AsyncStorage.removeItem("token");
+            //     navigation.navigate("Login");
+            // } else {
+            //     Alert.alert("Błąd", error.message || "Nie udało się dodać ogłoszenia.");
+            // }
         }
     };
-
-    const handleTitleChange = (value) => {
-        setTitle(value);
-        setTitleError(value.length < 1 ? "Tytuł nie może być pusty." : "");
-    };
-
-    const handlePriceChange = (value) => {
-        const numericValue = parseFloat(value);
-        if (numericValue < 0) {
-            setPrice("");
-        } else {
-            setPrice(value);
-        }
-    };
-
-    const advertisementTypeOptions = [
-        { value: "free", label: "Za darmo" },
-        { value: "exchange", label: "Na wymianę" },
-        { value: "sell", label: "Sprzedaj" },
-    ];
-
-    const conditionOptions = [
-        { value: "new_with_tag", label: "Nowy z metką" },
-        { value: "new_without_tag", label: "Nowy bez metki" },
-        { value: "very_good", label: "Bardzo dobry" },
-        { value: "good", label: "Dobry" },
-        { value: "average", label: "Średni" },
-    ];
-
-    const categoryOptions = [
-        { value: "electronics", label: "Elektronika" },
-        { value: "fashion", label: "Moda" },
-        { value: "automotive", label: "Motoryzacja" },
-        { value: "realestate", label: "Nieruchomości" },
-        { value: "home_garden", label: "Dom i ogród" },
-        { value: "sports", label: "Sport" },
-        { value: "books", label: "Książki" },
-        { value: "toys", label: "Zabawki" },
-        { value: "services", label: "Usługi" },
-        { value: "other", label: "Inne" },
-    ];
-
-    const brandOptions = [
-        { value: "apple", label: "Apple" },
-        { value: "samsung", label: "Samsung" },
-        { value: "nike", label: "Nike" },
-    ];
-
-    const cityOptions = [
-        { value: "bialystok", label: "Białystok" },
-        { value: "warszawa", label: "Warszawa" },
-        { value: "krakow", label: "Kraków" },
-    ];
 
     return (
-        <View style={styles.container}>
-            <ScrollView>
-                <Navbar />
-                <View style={styles.formContainer}>
-                    <Text style={styles.header}>Dodaj ogłoszenie</Text>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.innerContainer}>
+                    <Navbar />
+                    <FlatList
+                        data={[{ key: "form" }]}
+                        keyExtractor={(item) => item.key}
+                        renderItem={() => (
+                            <View style={styles.formContainer}>
+                                <Text style={styles.header}>Dodaj ogłoszenie</Text>
 
-                    <ImageUploader images={images} onImageUpload={handleImageUpload} onRemoveImage={handleRemoveImage} />
+                                <ImageUploader images={images} onImageUpload={setImages} />
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Tytuł ogłoszenia:</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={title}
-                            onChangeText={handleTitleChange}
-                            placeholder="np. nowa bluzka do oddania"
-                        />
-                        {titleError ? <Text style={styles.errorText}>{titleError}</Text> : null}
-                    </View>
+                                <View style={styles.formGroup}>
+                                    <Text style={styles.label}>Tytuł ogłoszenia:</Text>
+                                    <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="np. Nowa bluzka do oddania" />
+                                </View>
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Opis ogłoszenia:</Text>
-                        <TextInput
-                            style={[styles.input, styles.textArea]}
-                            value={description}
-                            onChangeText={handleDescriptionChange}
-                            placeholder="Wpisz opis ogłoszenia tutaj..."
-                            multiline
-                        />
-                        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
-                    </View>
+                                <View style={styles.formGroup}>
+                                    <Text style={styles.label}>Opis ogłoszenia:</Text>
+                                    <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="Opisz swój przedmiot..." multiline />
+                                </View>
 
-                    <CustomSelect options={categoryOptions} value={selectedValue} onChange={setSelectedValue} placeholder="Wybierz kategorię" />
+                                <CustomSelect options={categoryOptions} value={selectedCategory} onChange={setSelectedCategory} placeholder="Wybierz kategorię" />
+                                <BrandSelect options={brandOptions} value={selectedBrand} onChange={setSelectedBrand} placeholder="Wybierz markę" />
+                                <CustomSelect options={conditionOptions} value={selectedCondition} onChange={setSelectedCondition} placeholder="Wybierz stan przedmiotu" />
+                                <CustomSelect options={advertisementTypeOptions} value={selectedAdvertisementType} onChange={setSelectedAdvertisementType} placeholder="Wybierz rodzaj" />
 
-                    <BrandSelect options={brandOptions} value={selectedBrand} onChange={setSelectedBrand} placeholder="Wybierz markę" />
+                                {selectedAdvertisementType?.value === "sell" && <TextInput style={styles.input} value={price} onChangeText={setPrice} placeholder="Podaj cenę" keyboardType="numeric" />}
 
-                    <CustomSelect options={conditionOptions} value={selectedCondition} onChange={setSelectedCondition} placeholder="Wybierz stan przedmiotu" />
+                                <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} placeholder="Numer telefonu" keyboardType="phone-pad" />
 
-                    <CustomSelect options={advertisementTypeOptions} value={selectedAdvertisementType} onChange={setSelectedAdvertisementType} placeholder="Wybierz rodzaj" />
+                                {/* 🔹 Zmienione miasto z listy na pole tekstowe */}
+                                <View style={styles.formGroup}>
+                                    <Text style={styles.label}>Miasto:</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        value={city}
+                                        onChangeText={setCity}
+                                        placeholder="Wpisz miasto"
+                                    />
+                                </View>
 
-                    {selectedAdvertisementType?.value === "sell" && (
-                        <TextInput
-                            style={styles.input}
-                            value={price}
-                            onChangeText={handlePriceChange}
-                            placeholder="Podaj cenę"
-                            keyboardType="numeric"
-                        />
-                    )}
-
-                    <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder="E-mail" keyboardType="email-address" />
-
-                    <TextInput style={styles.input} value={phoneNumber} onChangeText={setPhoneNumber} placeholder="Numer telefonu" keyboardType="phone-pad" />
-
-                    <BrandSelect options={cityOptions} value={selectedCity} onChange={setSelectedCity} placeholder="Wybierz miasto" />
-
-                    <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                        <Text style={styles.submitButtonText}>Dodaj ogłoszenie</Text>
-                    </TouchableOpacity>
+                                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                                    <Text style={styles.submitButtonText}>Dodaj ogłoszenie</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    />
                 </View>
-            </ScrollView>
-        </View>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#f8f8f8",
-    },
-    formContainer: {
-        padding: 20,
-    },
-    header: {
-        fontSize: 24,
-        fontWeight: "bold",
-        color: "#1e3a8a",
-        marginBottom: 20,
-    },
-    formGroup: {
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#333",
-        marginBottom: 5,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 10,
-        padding: 10,
-        fontSize: 16,
-        backgroundColor: "#fff",
-    },
-    textArea: {
-        height: 100,
-        textAlignVertical: "top",
-    },
-    errorText: {
-        color: "red",
-        fontSize: 12,
-    },
-    submitButton: {
-        backgroundColor: "#28a745",
-        paddingVertical: 15,
-        borderRadius: 25,
-        alignItems: "center",
-    },
-    submitButtonText: {
-        color: "#fff",
-        fontSize: 18,
-        fontWeight: "bold",
-    },
+    container: { flex: 1, backgroundColor: "#f8f8f8" },
+    innerContainer: { flex: 1 },
+    formContainer: { padding: 20 },
+    header: { fontSize: 24, fontWeight: "bold", color: "#1e3a8a", marginBottom: 20 },
+    formGroup: { marginBottom: 20 },
+    label: { fontSize: 16, fontWeight: "bold", color: "#333", marginBottom: 5 },
+    input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 10, padding: 10, fontSize: 16, backgroundColor: "#fff" },
+    textArea: { height: 100, textAlignVertical: "top" },
+    submitButton: { backgroundColor: "#28a745", paddingVertical: 15, borderRadius: 25, alignItems: "center" },
+    submitButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
 });
 
 export default AddItem;
