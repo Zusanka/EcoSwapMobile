@@ -10,43 +10,28 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { login } from "../api/api"; // Import funkcji `login` z pliku `api.js`
 
 const Login = () => {
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [loginInput, setLoginInput] = useState(""); // Pole loginu
+  const [password, setPassword] = useState(""); // Pole hasła
+  const [showPassword, setShowPassword] = useState(false); // Czy hasło ma być widoczne
   const navigation = useNavigation();
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("http://192.168.1.108:8080/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username: login, password }),
-      });
+      // Wywołanie funkcji `login` z `api.js`
+      const data = await login({ username: loginInput, password });
+      console.log("Zalogowano pomyślnie:", data);
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Dane z backendu po zalogowaniu:", data);
-
-        // Jeśli backend zwraca { token, id, username, email, ... }:
-        if (data.token) {
-          await AsyncStorage.setItem("token", data.token);
-        }
-        await AsyncStorage.setItem("user", JSON.stringify(data));
-
-        Alert.alert("Sukces", "Zalogowano pomyślnie!");
-        navigation.navigate("Home");
-      } else {
-        const errorData = await response.text();
-        Alert.alert("Błąd logowania", errorData || "Nieprawidłowe dane");
-      }
+      Alert.alert("Sukces", "Zalogowano pomyślnie!");
+      navigation.navigate("Home"); // Nawigacja do ekranu Home
     } catch (error) {
-      Alert.alert("Błąd", "Nie udało się połączyć z serwerem");
-      console.error(error);
+      console.error("Błąd logowania:", error.message);
+      Alert.alert(
+          "Błąd logowania",
+          error.response?.data?.message || "Nie udało się zalogować. Sprawdź połączenie z serwerem."
+      );
     }
   };
 
@@ -72,8 +57,8 @@ const Login = () => {
                 style={styles.input}
                 placeholder="Wpisz login"
                 placeholderTextColor="#ccc"
-                value={login}
-                onChangeText={setLogin}
+                value={loginInput}
+                onChangeText={setLoginInput}
             />
           </View>
 
@@ -141,7 +126,7 @@ const Login = () => {
       </ScrollView>
   );
 };
-// ===== STYLES =====
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,

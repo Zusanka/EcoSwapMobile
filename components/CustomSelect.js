@@ -10,23 +10,19 @@ import {
 
 const CustomSelect = ({ options, value, onChange, placeholder }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [currentValue, setCurrentValue] = useState(value);
     const [currentCategory, setCurrentCategory] = useState(null);
 
     const handleOptionClick = (option) => {
         if (option.subOptions) {
-            setCurrentValue(option);
             setCurrentCategory(option);
         } else {
             onChange(option);
-            setCurrentValue(option);
             setIsOpen(false);
         }
     };
 
     const handleSubOptionClick = (subOption) => {
         onChange(subOption);
-        setCurrentValue(subOption);
         setCurrentCategory(null);
         setIsOpen(false);
     };
@@ -41,8 +37,8 @@ const CustomSelect = ({ options, value, onChange, placeholder }) => {
                 style={styles.selector}
                 onPress={() => setIsOpen((prev) => !prev)}
             >
-                <Text style={[styles.selectorText, !currentValue && styles.placeholderText]}>
-                    {currentValue ? currentValue.label : placeholder}
+                <Text style={[styles.selectorText, !value && styles.placeholderText]}>
+                    {value ? value.label : placeholder}
                 </Text>
             </TouchableOpacity>
 
@@ -51,15 +47,12 @@ const CustomSelect = ({ options, value, onChange, placeholder }) => {
                     <View style={styles.modalContent}>
                         {currentCategory ? (
                             <View>
-                                <TouchableOpacity
-                                    style={styles.backButton}
-                                    onPress={handleBackToCategories}
-                                >
-                                    <Text style={styles.backButtonText}>Powrót do kategorii</Text>
+                                <TouchableOpacity style={styles.backButton} onPress={handleBackToCategories}>
+                                    <Text style={styles.backButtonText}>Powrót</Text>
                                 </TouchableOpacity>
                                 <FlatList
-                                    data={currentCategory.subOptions}
-                                    keyExtractor={(item) => item.value}
+                                    data={currentCategory.subOptions || []}
+                                    keyExtractor={(item, index) => String(item?.value ?? index)}
                                     renderItem={({ item }) => (
                                         <TouchableOpacity
                                             style={styles.option}
@@ -72,8 +65,8 @@ const CustomSelect = ({ options, value, onChange, placeholder }) => {
                             </View>
                         ) : (
                             <FlatList
-                                data={options}
-                                keyExtractor={(item) => item.value}
+                                data={options || []}
+                                keyExtractor={(item, index) => String(item?.value ?? index)}
                                 renderItem={({ item }) => (
                                     <TouchableOpacity
                                         style={styles.option}
@@ -100,7 +93,6 @@ const CustomSelect = ({ options, value, onChange, placeholder }) => {
 const styles = StyleSheet.create({
     container: {
         marginBottom: 16,
-
     },
     selector: {
         padding: 10,

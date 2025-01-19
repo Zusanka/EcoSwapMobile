@@ -12,10 +12,12 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Navbar from "./Navbar";
 import ItemCard from "./ItemCard";
+import { fetchItems } from "../api/api"; // Zakładamy, że ta funkcja obsługuje endpoint /api/items
 
 const Home = () => {
   const [likedItems, setLikedItems] = useState({});
   const [user, setUser] = useState(null);
+  const [lastItems, setLastItems] = useState([]); // Nowy stan dla ostatnich przedmiotów
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -30,7 +32,22 @@ const Home = () => {
         console.log("Error reading user data from AsyncStorage:", err);
       }
     };
+
+    const fetchLastItems = async () => {
+      try {
+        const response = await fetchItems(); // Pobranie danych z API
+        console.log('Odpowiedź API:', response); // Debugowanie odpowiedzi
+        const items = response?.content?.slice(0, 5) || []; // Pobieramy pierwsze 5 elementów z `content`
+        setLastItems(items);
+      } catch (error) {
+        console.log("Błąd pobierania ostatnich przedmiotów:", error);
+        setLastItems([]);
+      }
+    };
+
+
     checkUser();
+    fetchLastItems();
   }, []);
 
   const handleLikeClick = (itemId) => {
@@ -104,40 +121,31 @@ const Home = () => {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Ostatnio dodane</Text>
-            <FlatList
-                data={[
-                  {
-                    id: 1,
-                    name: "T-shirt",
-                    dateAdded: "29.10.2024",
-                    category: "Moda",
-                    price: 29.99,
-                    brand: "Stradivarius",
-                    image: require("../assets/1.jpeg"),
-                  },
-                  {
-                    id: 2,
-                    name: "Plecak z eko skóry",
-                    dateAdded: "30.10.2024",
-                    category: "Moda",
-                    price: 49.99,
-                    brand: "Zara",
-                    image: require("../assets/2.jpeg"),
-                  },
-                ]}
-                keyExtractor={(item) => item.id.toString()}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.itemsContainer}
-                renderItem={({ item }) => (
-                    <ItemCard
-                        item={item}
-                        liked={likedItems[item.id]}
-                        onLike={() => handleLikeClick(item.id)}
+            {user ? (
+                lastItems.length > 0 ? (
+                    <FlatList
+                        data={lastItems}
+                        keyExtractor={(item) => item.itemId.toString()}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.itemsContainer}
+                        renderItem={({ item }) => (
+                            <ItemCard
+                                item={item}
+                                liked={likedItems[item.itemId]}
+                                onLike={() => handleLikeClick(item.itemId)}
+                            />
+                        )}
                     />
-                )}
-            />
+                ) : (
+                    <Text style={styles.noItemsMessage}>Brak ostatnio dodanych przedmiotów.</Text>
+                )
+            ) : (
+                <Text style={styles.joinMessage}>Aby zobaczyć więcej, dołącz do nas!</Text>
+            )}
           </View>
+
+
         </ScrollView>
       </View>
   );
@@ -243,6 +251,19 @@ const styles = StyleSheet.create({
   itemsContainer: {
     paddingHorizontal: 10,
   },
+  joinMessage: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  noItemsMessage: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+
 });
 
 export default Home;

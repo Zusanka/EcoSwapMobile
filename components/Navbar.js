@@ -35,7 +35,7 @@ const Navbar = () => {
 
     return (
         <View style={styles.navbar}>
-            <Text style={styles.logo}>EcoSwap</Text>
+            <Text style={styles.logo}>Eco Swap</Text>
 
             <View style={styles.searchContainer}>
                 <TextInput
