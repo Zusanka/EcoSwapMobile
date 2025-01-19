@@ -184,6 +184,20 @@ export const fetchItems = async () => {
     }
 };
 
+// Funkcja pobierająca szczegóły przedmiotu po jego ID
+export const fetchItemById = async (itemId) => {
+    try {
+        if (!itemId) {
+            throw new Error("ID przedmiotu jest wymagane.");
+        }
+        const response = await api.get(`/api/items/${itemId}`); // Wywołanie API z odpowiednim ID
+        console.log("Odpowiedź API dla przedmiotu:", response.data);
+        return response.data; // Zwracamy dane szczegółowe przedmiotu
+    } catch (error) {
+        console.error("Błąd podczas pobierania szczegółów przedmiotu:", error.response?.data || error.message);
+        throw error; // Rzucamy błąd, aby obsłużyć go w miejscu wywołania
+    }
+};
 
 
 /* ========== INNE ========== */

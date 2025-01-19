@@ -1,13 +1,19 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const ItemCard = ({ item, liked, onLike }) => {
+    const navigation = useNavigation();
+
+    const handlePress = () => {
+        navigation.navigate("Item", { itemId: item.itemId }); // Przekazanie ID przedmiotu
+    };
+
     return (
-        <View style={styles.card}>
-            {/* Wyświetlenie obrazu lub tekstu w przypadku jego braku */}
+        <TouchableOpacity style={styles.card} onPress={handlePress}>
             {item.images && item.images.length > 0 ? (
                 <Image
-                    source={{ uri: item.images[0] }} // Wyświetla pierwszy obraz z tablicy
+                    source={{ uri: item.images[0] }}
                     style={styles.image}
                 />
             ) : (
@@ -16,7 +22,6 @@ const ItemCard = ({ item, liked, onLike }) => {
                 </View>
             )}
 
-            {/* Wyświetlenie szczegółów */}
             <View style={styles.details}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.brand}>
@@ -26,17 +31,16 @@ const ItemCard = ({ item, liked, onLike }) => {
                 <Text style={styles.description} numberOfLines={2}>
                     {item.description || "Brak opisu"}
                 </Text>
-
-                {/* Przyciski */}
-                <View style={styles.actions}>
-                    <TouchableOpacity onPress={onLike} style={styles.likeButton}>
-                        <Text style={styles.likeButtonText}>
-                            {liked ? "💔" : "❤️"}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
             </View>
-        </View>
+            {/* Przyciski */}
+            <View style={styles.actions}>
+                <TouchableOpacity onPress={onLike} style={styles.likeButton}>
+                    <Text style={styles.likeButtonText}>
+                        {liked ? "💔" : "❤️"}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+        </TouchableOpacity>
     );
 };
 
@@ -95,20 +99,15 @@ const styles = StyleSheet.create({
         color: "#999",
         marginBottom: 10,
     },
-    actions: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
     likeButton: {
         backgroundColor: "#28a745",
         paddingVertical: 5,
         paddingHorizontal: 10,
         borderRadius: 5,
     },
-    likeButtonText: {
-        color: "#fff",
-        fontSize: 14,
-    },
 });
 
 export default ItemCard;
+
+
+

@@ -26,7 +26,11 @@ export default function App() {
           <Stack.Screen name="PersonDetails" component={PersonDetails} />
           <Stack.Screen name="AddItem" component={AddItem} />
           <Stack.Screen name="Navbar" component={Navbar} options={{ headerShown: false }} />
-          <Stack.Screen name="Item" component={Item} />
+          <Stack.Screen
+              name="Item"
+              component={Item}
+              options={{ title: "Szczegóły Przedmiotu" }}
+          />
           <Stack.Screen name="User" component={User} />
           <Stack.Screen name="MyAccount" component={MyAccount} />
           <Stack.Screen name="Messages" component={Messages} />

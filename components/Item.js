@@ -10,24 +10,45 @@ import {
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import ChatWindow from "./ChatWindow";
+import { fetchItemById } from "../api/api"; // Funkcja do pobierania szczegółów przedmiotu z API
 
 const Item = ({ route, navigation }) => {
-    const [formData, setFormData] = useState(null);
+    const [formData, setFormData] = useState(null); // Dane przedmiotu
     const [modalImageIndex, setModalImageIndex] = useState(null);
     const [isHeartFilled, setIsHeartFilled] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const { itemId } = route.params || {}; // Odczytanie ID przedmiotu z parametrów nawigacji
 
     useEffect(() => {
-        const { itemData } = route.params || {};
-        if (itemData) {
-            setFormData(itemData);
-        }
-    }, [route.params]);
+        const fetchItemData = async () => {
+            try {
+                if (!itemId) throw new Error("Brak ID przedmiotu");
+                const itemData = await fetchItemById(itemId); // Pobranie danych przedmiotu z API
+                setFormData(itemData);
+            } catch (error) {
+                console.error("Błąd pobierania danych przedmiotu:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchItemData();
+    }, [itemId]);
+
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <Text>Ładowanie danych...</Text>
+            </View>
+        );
+    }
 
     if (!formData) {
         return (
             <View style={styles.loadingContainer}>
-                <Text>Ładowanie danych...</Text>
+                <Text>Nie udało się załadować danych przedmiotu.</Text>
             </View>
         );
     }
@@ -80,10 +101,10 @@ const Item = ({ route, navigation }) => {
             </View>
 
             <View style={styles.detailsSection}>
-                <Text style={styles.title}>{formData.title}</Text>
+                <Text style={styles.title}>{formData.name}</Text>
                 <Text style={styles.description}>{formData.description}</Text>
-                <Text style={styles.label}>Kategoria: {formData.category}</Text>
-                <Text style={styles.label}>Marka: {formData.brand}</Text>
+                <Text style={styles.label}>Kategoria: {formData.category?.name || "Nieznana"}</Text>
+                <Text style={styles.label}>Marka: {formData.brand?.name || "Nieznana"}</Text>
                 <Text style={styles.label}>Stan: {formData.condition}</Text>
                 <Text style={styles.label}>Cena: {formData.price} zł</Text>
                 <TouchableOpacity
@@ -120,7 +141,7 @@ const Item = ({ route, navigation }) => {
 
             {isChatOpen && (
                 <ChatWindow
-                    productName={formData.title}
+                    productName={formData.name}
                     productImage={formData.images[0]}
                     onClose={toggleChat}
                 />
