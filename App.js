@@ -13,6 +13,7 @@ import Messages from './components/Messages';
 import Home from './components/Home';
 import CategoryPage from './components/CategoryPage';
 import SearchResults from "./components/SearchResults";
+import Favorites from "./components/Favorites";
 
 const Stack = createStackNavigator();
 
@@ -21,24 +22,27 @@ export default function App() {
       <NavigationContainer>
 
         <Stack.Navigator initialRouteName="Home">
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="Register" component={Registration} />
-          <Stack.Screen name="PersonDetails" component={PersonDetails} />
-          <Stack.Screen name="AddItem" component={AddItem} />
+          <Stack.Screen name="Login" component={Login}options={{ title: "Logowanie" }} />
+          <Stack.Screen name="Register" component={Registration}options={{ title: "Rejestracja" }} />
+          <Stack.Screen name="PersonDetails" component={PersonDetails} options={{ title: "Szczegóły profilu" }}/>
+          <Stack.Screen name="AddItem" component={AddItem} options={{ title: "Dodaj ogłoszenie" }}/>
           <Stack.Screen name="Navbar" component={Navbar} options={{ headerShown: false }} />
           <Stack.Screen
               name="Item"
               component={Item}
               options={{ title: "Szczegóły Przedmiotu" }}
           />
-          <Stack.Screen name="User" component={User} />
-          <Stack.Screen name="MyAccount" component={MyAccount} />
-          <Stack.Screen name="Messages" component={Messages} />
-          <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="SearchResults" component={SearchResults} />
+          <Stack.Screen name="User" component={User} options={{ title: "Użytkownik" }}/>
+          <Stack.Screen name="MyAccount" component={MyAccount} options={{ title: "Mój Profil" }}/>
+          <Stack.Screen name="Favorites" component={Favorites} options={{title: "Ulubione ogłoszenia" }}/>
+
+          <Stack.Screen name="Messages" component={Messages}options={{ title: "Wiadomości" }} />
+          <Stack.Screen name="Home" component={Home}options={{ title: "Strona główna" }} />
+          <Stack.Screen name="SearchResults" component={SearchResults} options={{ title: "Wyniki wyszukiwania" }}/>
           <Stack.Screen
               name="CategoryPage"
               component={CategoryPage}
+
               options={({ route }) => ({ title: route.params?.categoryName || 'Category' })}
           />
         </Stack.Navigator>

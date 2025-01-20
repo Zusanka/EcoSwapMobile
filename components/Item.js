@@ -123,9 +123,15 @@ const Item = ({ route }) => {
                 <Text style={styles.title}>{formData.name}</Text>
                 <Text style={styles.description}>{formData.description}</Text>
 
-                <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
+                <TouchableOpacity
+                    style={[
+                        styles.favoriteButton,
+                        formData.isFavorite ? styles.removeFavoriteButton : styles.addFavoriteButton
+                    ]}
+                    onPress={toggleFavorite}
+                >
                     <Text style={styles.favoriteButtonText}>
-                        {formData.isFavorite ? "💔 Usuń z ulubionych" : "❤️ Dodaj do ulubionych"}
+                        {formData.isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -142,8 +148,22 @@ const styles = StyleSheet.create({
     detailsSection: { padding: 16 },
     title: { fontSize: 24, fontWeight: "bold", marginBottom: 8 },
     description: { fontSize: 16, color: "#666", marginBottom: 8 },
-    favoriteButton: { backgroundColor: "#28a745", padding: 10, borderRadius: 5, alignItems: "center" },
-    favoriteButtonText: { color: "#fff", fontSize: 16 },
+    favoriteButton: {
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        alignItems: "center",
+    },
+    addFavoriteButton: {
+        backgroundColor: "#28a745", // Zielone tło
+    },
+    removeFavoriteButton: {
+        backgroundColor: "#ff4d4d", // Czerwone tło
+    },
+    favoriteButtonText: {
+        color: "#fff",
+        fontSize: 16,
+    },
 });
 
 export default Item;

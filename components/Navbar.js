@@ -35,8 +35,10 @@ const Navbar = () => {
 
     return (
         <View style={styles.navbar}>
-            <Text style={styles.logo}>Eco Swap</Text>
-
+            <TouchableOpacity style={styles.iconButton}
+                              onPress={() => navigation.navigate("Home")}>
+            <Text style={styles.logo}>EcoSwap</Text>
+            </TouchableOpacity>
             <View style={styles.searchContainer}>
                 <TextInput
                     style={styles.searchInput}
@@ -52,8 +54,11 @@ const Navbar = () => {
             </View>
 
             <View style={styles.iconContainer}>
-                <TouchableOpacity style={styles.iconButton}>
+                <TouchableOpacity style={styles.iconButton}
+                                  onPress={() => navigation.navigate("Favorites")}
+                >
                     <FontAwesome name="heart" size={24} color="red" />
+
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.iconButton}

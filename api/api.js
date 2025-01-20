@@ -194,7 +194,16 @@ export const addToFavorites = async (favoriteItem) => {
         throw error;
     }
 };
-
+export const fetchFavorites = async () => {
+    try {
+        const response = await api.get("/api/favorites");
+        console.log("Fetched favorites:", response.data);
+        return response.data; // Zakładam, że zwraca tablicę przedmiotów
+    } catch (error) {
+        console.error("Błąd podczas pobierania ulubionych przedmiotów:", error.response?.data || error.message);
+        throw error;
+    }
+};
 export const removeFromFavorites = async (itemId) => {
     try {
         const response = await api.delete(`/api/favorites/${itemId}`);

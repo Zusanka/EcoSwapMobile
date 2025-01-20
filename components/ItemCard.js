@@ -37,9 +37,15 @@ const ItemCard = ({ item, onToggleFavorite }) => {
             </View>
 
             <View style={styles.actions}>
-                <TouchableOpacity onPress={handleToggleFavorite} style={styles.favoriteButton}>
+                <TouchableOpacity
+                    onPress={handleToggleFavorite}
+                    style={[
+                        styles.favoriteButton,
+                        item.isFavorite ? styles.removeFavoriteButton : styles.addFavoriteButton
+                    ]}
+                >
                     <Text style={styles.favoriteButtonText}>
-                        {item.isFavorite ? "💔 Usuń z ulubionych" : "❤️ Dodaj do ulubionych"}
+                        {item.isFavorite ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -107,10 +113,15 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     favoriteButton: {
-        backgroundColor: "#28a745",
         paddingVertical: 5,
         paddingHorizontal: 10,
         borderRadius: 5,
+    },
+    addFavoriteButton: {
+        backgroundColor: "#28a745", // Zielone tło
+    },
+    removeFavoriteButton: {
+        backgroundColor: "#ff4d4d", // Czerwone tło
     },
     favoriteButtonText: {
         color: "#fff",
