@@ -27,10 +27,9 @@ const Navbar = () => {
     };
 
     const handleSearch = () => {
-        if (searchQuery.trim().length > 0) {
-            navigation.navigate("SearchResults", { query: searchQuery });
-            setSearchQuery("");
-        }
+
+            navigation.navigate("SearchResults");
+
     };
 
     return (
@@ -39,19 +38,9 @@ const Navbar = () => {
                               onPress={() => navigation.navigate("Home")}>
             <Text style={styles.logo}>EcoSwap</Text>
             </TouchableOpacity>
-            <View style={styles.searchContainer}>
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Szukaj rzeczy lub użytkownika..."
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    returnKeyType="search"
-                    onSubmitEditing={handleSearch}
-                />
                 <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                    <FontAwesome name="search" size={20} color="#fff" />
+                    <FontAwesome name="search" size={20}  />
                 </TouchableOpacity>
-            </View>
 
             <View style={styles.iconContainer}>
                 <TouchableOpacity style={styles.iconButton}
@@ -96,25 +85,13 @@ const styles = StyleSheet.create({
         flex: 1,
         textAlign: "left",
     },
-    searchContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#f1f1f1",
-        borderRadius: 20,
-        flex: 2,
-        marginHorizontal: 10,
-    },
-    searchInput: {
-        flex: 1,
-        paddingVertical: 6,
-        paddingHorizontal: 12,
-        fontSize: 16,
-    },
+
+
     searchButton: {
-        backgroundColor: "#28a745",
+        color: "#28a745",
         padding: 8,
-        borderTopRightRadius: 20,
-        borderBottomRightRadius: 20,
+        borderRadius: 20,
+        marginLeft: 60
     },
     iconContainer: {
         flexDirection: "row",

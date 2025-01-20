@@ -272,3 +272,14 @@ export const getBrands = async () => {
         throw error;
     }
 };
+/* ========== WYSZUKIWANIE ========== */
+
+// Dodajemy funkcję do wyszukiwania użytkowników
+export const searchUsers = async (username) => {
+    try {
+        const response = await api.get(`/api/users/username/${encodeURIComponent(username)}`);
+        return response.data; // Zakładam, że API zwraca pojedynczego użytkownika jako obiekt
+    } catch (error) {
+        return null;
+    }
+};
