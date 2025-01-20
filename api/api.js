@@ -297,3 +297,23 @@ export const getUserItems = async (userId) => {
         return null;
     }
 };
+
+// Pobieranie opinii użytkownika
+export const getUserReviews = async (userId) => {
+    try {
+        const response = await api.get(`/api/reviews/user/${userId}`);
+        return response.data.reviews; // Zakładam, że backend zwraca tablicę opinii w polu 'reviews'
+    } catch (error) {
+        null;
+    }
+};
+
+// Pobieranie średniej oceny użytkownika
+export const getUserAverageRating = async (userId) => {
+    try {
+        const response = await api.get(`/api/reviews/user/${userId}/average-rating`);
+        return response.data.averageRating; // Zakładam, że backend zwraca średnią ocenę w polu 'averageRating'
+    } catch (error) {
+        null;
+    }
+};

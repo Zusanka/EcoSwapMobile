@@ -1,7 +1,17 @@
 // User.js
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, TextInput, FlatList, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faEnvelope, faPhone, faHome } from '@fortawesome/free-solid-svg-icons';
@@ -11,7 +21,16 @@ import ReviewCard from './ReviewCard';
 import { renderStars } from './StarRating';
 
 // Importujemy funkcje z api.js
-import { getUserData, getUserItems } from '../api/api';
+import {
+  getUserData,
+  getUserItems,
+  getUserReviews,
+  getUserAverageRating,
+  checkIfFavorite,
+  addToFavorites,
+  removeFromFavorites,
+} from '../api/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const User = () => {
   const navigation = useNavigation();
@@ -24,7 +43,8 @@ const User = () => {
   const [user, setUser] = useState(null); // Dane użytkownika
   const [items, setItems] = useState([]); // Ogłoszenia użytkownika
   const [reviews, setReviews] = useState([]); // Opinie użytkownika
-  const [likedItems, setLikedItems] = useState({});
+  const [averageRating, setAverageRating] = useState(0); // Średnia ocena użytkownika
+  const [likedItems, setLikedItems] = useState({}); // Stan polubień dla ogłoszeń
   const [showReviews, setShowReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newReview, setNewReview] = useState({ username: '', rating: 0, text: '' });
@@ -48,15 +68,29 @@ const User = () => {
         const userItems = await getUserItems(userId);
         setItems(userItems);
 
-        // Opcjonalnie: Pobranie opinii użytkownika z backendu
-        // const userReviews = await getUserReviews(userId);
-        // setReviews(userReviews);
+        // Pobranie opinii użytkownika z backendu
+        const userReviews = await getUserReviews(userId);
+        setReviews(userReviews);
 
-        // Przykładowe opinie (jeśli nie są pobierane z backendu)
-        setReviews([
-          { id: 1, username: 'User1', rating: 4, text: 'Świetny użytkownik!', date: '2024-10-01' },
-          { id: 2, username: 'User2', rating: 5, text: 'Bardzo polecam.', date: '2024-09-20' },
-        ]);
+        // Pobranie średniej oceny użytkownika z backendu
+        const userAverageRating = await getUserAverageRating(userId);
+        setAverageRating(userAverageRating);
+
+        // Sprawdzenie statusu polubień dla każdego ogłoszenia
+        const favoriteStatuses = await Promise.all(
+            userItems.map(async (item) => {
+              const status = await checkIfFavorite(item.id);
+              return { itemId: item.id, isFavorite: status.isFavorite };
+            })
+        );
+
+        // Tworzenie obiektu z polubionymi ogłoszeniami
+        const liked = {};
+        favoriteStatuses.forEach((status) => {
+          liked[status.itemId] = status.isFavorite;
+        });
+
+        setLikedItems(liked);
       } catch (err) {
         setError('Nie udało się pobrać danych użytkownika.');
         console.error(err);
@@ -72,28 +106,37 @@ const User = () => {
     setShowReviews(!showReviews);
   };
 
-  const handleLikeClick = (id) => {
-    setLikedItems((prev) => ({ ...prev, [id]: !prev[id] }));
+  const handleLikeClick = async (itemId) => {
+    try {
+      if (likedItems[itemId]) {
+        // Usuwamy z ulubionych
+        await removeFromFavorites(itemId);
+      } else {
+        // Dodajemy do ulubionych
+        await addToFavorites(itemId);
+      }
+
+      // Aktualizujemy stan likedItems
+      setLikedItems((prev) => ({
+        ...prev,
+        [itemId]: !prev[itemId],
+      }));
+    } catch (error) {
+      console.error('Błąd przy aktualizacji ulubionych:', error);
+      // Opcjonalnie: Dodaj informację dla użytkownika o błędzie
+    }
   };
 
   const handleReviewSubmit = () => {
     const newReviewData = {
       ...newReview,
-      id: reviews.length + 1,
+      id: reviews.length + 1, // Możesz zmienić logikę generowania ID
       date: new Date().toISOString().split('T')[0],
     };
     setReviews([...reviews, newReviewData]);
     setNewReview({ username: '', rating: 0, text: '' });
     setShowReviewForm(false);
   };
-
-  const calculateAverageRating = () => {
-    if (reviews.length === 0) return 0;
-    const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
-    return (totalRating / reviews.length).toFixed(1);
-  };
-
-  const averageRating = parseFloat(calculateAverageRating());
 
   if (loading) {
     return (
@@ -132,7 +175,9 @@ const User = () => {
               </View>
           )}
           <Text style={styles.username}>{user.username}</Text>
-          <View style={styles.starsContainer}>{renderStars(averageRating)}</View>
+          <View style={styles.starsContainer}>
+            {renderStars(averageRating)}
+          </View>
           <Text style={styles.averageRating} onPress={handleToggleReviews}>
             Średnia: {averageRating}/5 na podstawie {reviews.length} opinii
           </Text>
@@ -156,8 +201,9 @@ const User = () => {
             <View style={styles.reviewsContainer}>
               <FlatList
                   data={reviews}
-                  keyExtractor={(item) => item.id}
+                  keyExtractor={(item) => item.id.toString()}
                   renderItem={({ item }) => <ReviewCard {...item} />}
+                  ListEmptyComponent={<Text style={styles.noReviewsText}>Brak opinii.</Text>}
               />
               {showReviewForm ? (
                   <View style={styles.reviewForm}>
@@ -182,12 +228,16 @@ const User = () => {
         ) : (
             <View style={styles.itemsContainer}>
               <Text style={styles.sectionTitle}>Ogłoszenia Użytkownika</Text>
-              {items!=null ? (
+              {items.length > 0 ? (
                   <FlatList
                       data={items}
-                      keyExtractor={(item) => item.itemId}
+                      keyExtractor={(item) => item.itemId.toString()}
                       renderItem={({ item }) => (
-                          <ItemCard item={item} liked={!!likedItems[item.id]} onLike={() => handleLikeClick(item.id)} />
+                          <ItemCard
+                              item={item}
+                              liked={!!likedItems[item.id]}
+                              onLike={() => handleLikeClick(item.id)}
+                          />
                       )}
                       horizontal
                       showsHorizontalScrollIndicator={false}
@@ -252,6 +302,7 @@ const styles = StyleSheet.create({
   itemsContainer: { padding: 16 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
   noResultsText: { fontSize: 14, color: '#777', textAlign: 'center' },
+  noReviewsText: { fontSize: 14, color: '#777', textAlign: 'center', marginTop: 10 },
 });
 
 export default User;
