@@ -1,5 +1,8 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Buffer } from 'buffer';
+global.Buffer = Buffer;
+
 
 // Adres Twojego backendu
 const API_URL = "http://192.168.1.104:8080";
@@ -125,21 +128,24 @@ export const updateProfilePicture = async (userId, base64Image) => {
 export const getProfilePicture = async (userId) => {
     try {
         const response = await api.get(`/api/users/${userId}/profile-picture`, {
-            responseType: "arraybuffer", // Pobierz dane binarne
+            responseType: "json", // Oczekuj JSON-a
         });
 
-        // Konwersja danych binarnych na Base64 bez użycia natywnych modułów
-        const base64Image = `data:image/jpeg;base64,${btoa(
-            new Uint8Array(response.data)
-                .reduce((data, byte) => data + String.fromCharCode(byte), "")
-        )}`;
+        // Zakładam, że backend zwraca JSON o strukturze { image: "Base64" }
+        const base64Image = response.data.image;
 
-        return base64Image;
+        if (!base64Image) {
+            throw new Error("Brak obrazu w odpowiedzi.");
+        }
+
+        return base64Image; // Zwróć dane obrazu w Base64
     } catch (error) {
         console.error("Błąd pobierania zdjęcia profilowego:", error.response?.data || error.message);
         throw error;
     }
 };
+
+
 
 /* ========== OGŁOSZENIA ========== */
 

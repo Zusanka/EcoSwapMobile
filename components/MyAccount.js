@@ -44,10 +44,6 @@ const MyAccount = () => {
                 if (!userStr) throw new Error("Brak danych użytkownika");
 
                 const user = JSON.parse(userStr);
-                console.log("Pobrane dane użytkownika:", user); // Debugowanie
-
-                if (!user.id) throw new Error("Brak ID użytkownika");
-
                 setUserId(user.id);
 
                 const userData = await getUserData(user.id);
@@ -60,8 +56,11 @@ const MyAccount = () => {
 
                 const profilePicBase64 = await getProfilePicture(user.id);
                 if (profilePicBase64) {
-                    setProfileImage(`data:image/jpeg;base64,${profilePicBase64}`);
+                    const uri = `data:image/jpeg;base64,${profilePicBase64}`;
+                    console.log("Poprawny URI zdjęcia profilowego:", uri); // Debuguj URI
+                    setProfileImage(uri);
                 }
+
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -71,6 +70,8 @@ const MyAccount = () => {
 
         fetchUserData();
     }, []);
+
+
 
     const pickImage = async () => {
         if (!userId) {
@@ -170,7 +171,14 @@ const styles = StyleSheet.create({
     errorText: { color: "red", textAlign: "center" },
     imageContainer: { alignItems: "center", marginBottom: 20 },
     imageWrapper: { width: 120, height: 120, borderRadius: 60, overflow: "hidden", alignItems: "center", justifyContent: "center", backgroundColor: "#f0f0f0" },
-    profileImage: { width: "100%", height: "100%" },
+    profileImage: {
+        width: 120,
+        height: 120,
+        borderRadius: 60, // Dla okrągłego obrazu
+        resizeMode: "cover", // Dopasowanie obrazu do kontenera
+        backgroundColor: "#ccc", // Tło na wypadek braku obrazu
+    },
+
     placeholder: { alignItems: "center", justifyContent: "center", width: "100%", height: "100%" },
     addImageText: { color: "#000", fontSize: 16, textAlign: "center" },
     label: { fontSize: 16, fontWeight: "bold", marginBottom: 5 },
