@@ -184,18 +184,47 @@ export const fetchItems = async () => {
     }
 };
 
-// Funkcja pobierająca szczegóły przedmiotu po jego ID
+export const addToFavorites = async (favoriteItem) => {
+    try {
+        console.log(favoriteItem);
+        const response = await api.post(`/api/favorites/favorites/${favoriteItem}`, favoriteItem);
+        return response.data;
+    } catch (error) {
+        console.error("Błąd podczas dodawania do ulubionych:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+export const removeFromFavorites = async (itemId) => {
+    try {
+        const response = await api.delete(`/api/favorites/${itemId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Błąd podczas usuwania z ulubionych:", error.response?.data || error.message);
+        throw error;
+    }
+};
+export const checkIfFavorite = async (itemId) => {
+    try {
+        const response = await api.get(`/api/favorites/check/${itemId}`);
+        console.log(`Status ulubionych dla z API${itemId}:`, response.data); // Debug
+        return response.data; // Zakładam, że backend zwraca obiekt `{ isFavorite: true/false }`
+    } catch (error) {
+        console.error("Błąd podczas sprawdzania, czy przedmiot jest w ulubionych:", error.response?.data || error.message);
+        return { isFavorite: false }; // Domyślnie false w razie błędu
+    }
+};
+
+
+// Funkcja pobierająca szczegóły przedmiotu po ID (z like i dislike)
 export const fetchItemById = async (itemId) => {
     try {
-        if (!itemId) {
-            throw new Error("ID przedmiotu jest wymagane.");
-        }
-        const response = await api.get(`/api/items/${itemId}`); // Wywołanie API z odpowiednim ID
-        console.log("Odpowiedź API dla przedmiotu:", response.data);
-        return response.data; // Zwracamy dane szczegółowe przedmiotu
+        const response = await api.get(`/api/items/${itemId}`);
+        console.log("Odpowiedź API dla szczegółów przedmiotu:", response.data);
+        return response.data; // Zwraca pełne szczegóły przedmiotu, w tym like/dislike
     } catch (error) {
-        console.error("Błąd podczas pobierania szczegółów przedmiotu:", error.response?.data || error.message);
-        throw error; // Rzucamy błąd, aby obsłużyć go w miejscu wywołania
+        console.error(`Błąd pobierania szczegółów przedmiotu ${itemId}:`, error.response?.data || error.message);
+        throw error;
     }
 };
 

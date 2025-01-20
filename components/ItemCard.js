@@ -2,41 +2,44 @@ import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
-const ItemCard = ({ item, liked, onLike }) => {
+const ItemCard = ({ item, onToggleFavorite }) => {
     const navigation = useNavigation();
 
     const handlePress = () => {
-        navigation.navigate("Item", { itemId: item.itemId }); // Przekazanie ID przedmiotu
+        navigation.navigate("Item", { itemId: item.itemId });
     };
+
+    const handleToggleFavorite = () => {
+        // Wywołanie funkcji z rodzica,
+        // przekazujemy item i OBECNY stan (item.isFavorite)
+        onToggleFavorite(item, item.isFavorite);
+    };
+
+    console.log(`ItemCard -> itemId=${item.itemId}, isFavorite=${item.isFavorite}`);
 
     return (
         <TouchableOpacity style={styles.card} onPress={handlePress}>
-            {item.images && item.images.length > 0 ? (
-                <Image
-                    source={{ uri: item.images[0] }}
-                    style={styles.image}
-                />
+            {item.images?.length > 0 ? (
+                <Image source={{ uri: item.images[0] }} style={styles.image} />
             ) : (
                 <View style={styles.noImageContainer}>
-                    <Text style={styles.noImageText}>Brak zdjęcia podglądowego</Text>
+                    <Text style={styles.noImageText}>Brak zdjęcia</Text>
                 </View>
             )}
 
             <View style={styles.details}>
                 <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.brand}>
-                    Marka: {item.brand?.name || "Nieznana"}
-                </Text>
+                <Text style={styles.brand}>Marka: {item.brand?.name || "Nieznana"}</Text>
                 <Text style={styles.condition}>Stan: {item.condition}</Text>
                 <Text style={styles.description} numberOfLines={2}>
                     {item.description || "Brak opisu"}
                 </Text>
             </View>
-            {/* Przyciski */}
+
             <View style={styles.actions}>
-                <TouchableOpacity onPress={onLike} style={styles.likeButton}>
-                    <Text style={styles.likeButtonText}>
-                        {liked ? "💔" : "❤️"}
+                <TouchableOpacity onPress={handleToggleFavorite} style={styles.favoriteButton}>
+                    <Text style={styles.favoriteButtonText}>
+                        {item.isFavorite ? "💔 Usuń z ulubionych" : "❤️ Dodaj do ulubionych"}
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -65,8 +68,6 @@ const styles = StyleSheet.create({
     noImageContainer: {
         width: "100%",
         height: 120,
-        borderTopLeftRadius: 10,
-        borderTopRightRadius: 10,
         backgroundColor: "#f0f0f0",
         justifyContent: "center",
         alignItems: "center",
@@ -99,15 +100,22 @@ const styles = StyleSheet.create({
         color: "#999",
         marginBottom: 10,
     },
-    likeButton: {
+    actions: {
+        flexDirection: "row",
+        justifyContent: "center",
+        paddingHorizontal: 10,
+        marginBottom: 10,
+    },
+    favoriteButton: {
         backgroundColor: "#28a745",
         paddingVertical: 5,
         paddingHorizontal: 10,
         borderRadius: 5,
     },
+    favoriteButtonText: {
+        color: "#fff",
+        fontSize: 14,
+    },
 });
 
 export default ItemCard;
-
-
-
