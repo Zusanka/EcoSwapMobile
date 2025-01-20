@@ -42,7 +42,6 @@ const Item = ({ route }) => {
         setLoading(true);
         try {
             const itemData = await fetchItemById(itemId);
-            console.log("Fetched item data:", itemData);
 
             if (user) {
                 const isFavorite = await checkIfFavorite(itemId);

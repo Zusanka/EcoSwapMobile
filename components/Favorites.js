@@ -52,7 +52,6 @@ const Favorites = () => {
         try {
             const fetchedFavorites = await fetchFavorites();
             setFavorites(fetchedFavorites);
-            console.log("Ustawiono ulubione przedmioty:", fetchedFavorites);
         } catch (error) {
             console.error("Błąd podczas pobierania ulubionych przedmiotów:", error);
             setFavorites([]);

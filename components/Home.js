@@ -50,7 +50,6 @@ const Home = () => {
     try {
       const response = await fetchItems();
       const items = response?.content || response || [];
-      console.log("Fetched items:", items);
 
       if (user) {
         // Gdy zalogowany, sprawdź, czy item jest w ulubionych
@@ -65,7 +64,7 @@ const Home = () => {
             })
         );
         setLastItems(itemsWithFavoriteStatus);
-        console.log("Updated lastItems:", itemsWithFavoriteStatus);
+        // console.log("Updated lastItems:", itemsWithFavoriteStatus);
       } else {
         // Gdy niezalogowany, isFavorite = false
         const itemsWithoutFavoriteStatus = items.map((item) => ({
@@ -73,7 +72,7 @@ const Home = () => {
           isFavorite: false,
         }));
         setLastItems(itemsWithoutFavoriteStatus);
-        console.log("Updated lastItems (no favorites):", itemsWithoutFavoriteStatus);
+        // console.log("Updated lastItems (no favorites):", itemsWithoutFavoriteStatus);
       }
     } catch (error) {
       console.error("Błąd pobierania ostatnich przedmiotów:", error);

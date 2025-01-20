@@ -1,5 +1,3 @@
-// SearchResults.js
-
 import React, { useState, useEffect } from "react";
 import {
     View,
@@ -16,7 +14,8 @@ import { useNavigation } from "@react-navigation/native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 // Importujemy istniejące funkcje z api.js
-import { fetchItems, searchUsers } from "../api/api";
+import { fetchItems, searchUsers,   getProfilePicture,
+} from "../api/api";
 
 const SearchResults = () => {
     const [searchQuery, setSearchQuery] = useState("");
@@ -26,13 +25,14 @@ const SearchResults = () => {
     const [loading, setLoading] = useState(false); // Flaga ładowania
     const [error, setError] = useState(""); // Komunikat o błędzie
     const navigation = useNavigation();
+    const [profileImage, setProfileImage] = useState(null);
+
 
     // Pobranie wszystkich przedmiotów przy montażu komponentu
     useEffect(() => {
         const loadAllItems = async () => {
             try {
                 const itemsData = await fetchItems();
-                console.log("Fetched items from API:", itemsData);
                 if (Array.isArray(itemsData.content)) {
                     setAllItems(itemsData.content);
                 } else if (itemsData.items && Array.isArray(itemsData.items)) {
@@ -53,7 +53,6 @@ const SearchResults = () => {
     // Funkcja obsługująca wyszukiwanie po kliknięciu przycisku lupy
     const handleSearch = async () => {
         console.log("query: " + searchQuery);
-        console.log("items: " + allItems);
 
         if (searchQuery.trim() === "") {
             // Jeśli zapytanie jest puste, wyczyść wyniki
@@ -71,7 +70,6 @@ const SearchResults = () => {
                 const filtered = allItems.filter((item) =>
                     item.name.toLowerCase().includes(searchQuery.toLowerCase())
                 );
-                console.log("Filtered items:", filtered);
                 setFilteredItems(filtered);
             } else {
                 console.warn("allItems is not an array:", allItems);
@@ -80,11 +78,13 @@ const SearchResults = () => {
 
             // Wyszukiwanie użytkownika po stronie serwera
             const usersData = await searchUsers(searchQuery);
-            console.log("Searched users:", usersData);
 
             if (usersData) {
-                // Zakładam, że backend zwraca pojedynczego użytkownika jako obiekt
                 setUser(usersData);
+                const profilePicBase64 = await getProfilePicture(usersData.userId);
+                if (profilePicBase64) {
+                    setProfileImage(`data:image/jpeg;base64,${profilePicBase64}`);
+                }
             } else {
                 setUser(null); // Brak użytkownika znalezionego
             }
@@ -131,16 +131,17 @@ const SearchResults = () => {
         return (
             <TouchableOpacity
                 style={styles.userCard}
-                onPress={
-                () => navigation.navigate("User", { userId: user.userId })}
+                onPress={() => navigation.navigate("User", { userId: user.userId })}
             >
-                {user.avatarUrl ? (
-                    <Image source={{ uri: user.avatarUrl }} style={styles.userAvatar} />
-                ) : (
-                    <View style={styles.noAvatarContainer}>
-                        <Text style={styles.noAvatarText}>Brak awatara</Text>
-                    </View>
-                )}
+                <TouchableOpacity style={styles.imageWrapper}>
+                    {profileImage ? (
+                        <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                    ) : (
+                        <View style={styles.placeholder}>
+                            <Text style={styles.noAvatarText}>Brak zdjęcia</Text>
+                        </View>
+                    )}
+                </TouchableOpacity>
                 <View style={styles.userDetails}>
                     <Text style={styles.userName}>{user.username}</Text>
                     <Text style={styles.userEmail}>{user.email}</Text>
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
     },
     searchButton: {
         marginLeft: 10,
-        backgroundColor: "#28a745", // Zielone tło
+        backgroundColor: "#28a745",
         padding: 10,
         borderRadius: 5,
         justifyContent: "center",
@@ -282,24 +283,6 @@ const styles = StyleSheet.create({
         color: "#777",
         textAlign: "center",
     },
-    resultDetails: {
-        padding: 10,
-    },
-    resultName: {
-        fontSize: 16,
-        fontWeight: "bold",
-        marginBottom: 5,
-    },
-    resultBrand: {
-        fontSize: 14,
-        color: "#555",
-        marginBottom: 5,
-    },
-    resultDescription: {
-        fontSize: 12,
-        color: "#999",
-        marginBottom: 10,
-    },
     userCard: {
         flexDirection: "row",
         alignItems: "center",
@@ -344,14 +327,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: "#555",
     },
-    noResultsContainer: {
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 20,
-    },
     noResultsText: {
         fontSize: 14,
         color: "#777",
+        textAlign: "center",
     },
     errorContainer: {
         marginTop: 10,
@@ -364,6 +343,32 @@ const styles = StyleSheet.create({
         fontSize: 14,
         textAlign: "center",
     },
+
+    imageWrapper: {
+        width: 60,
+        height: 60,
+        borderRadius: 60,
+        overflow: "hidden",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#f0f0f0",
+    },
+
+    profileImage: {
+        width: "100%",
+        height: "100%",
+        borderRadius: 60, // Dla okrągłego obrazu
+        resizeMode: "cover",
+    },
+    placeholder: {
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#ccc",
+    },
+
+
 });
 
 export default SearchResults;

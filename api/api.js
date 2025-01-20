@@ -89,6 +89,37 @@ export const getUserData = async (userId) => {
     }
 };
 
+export const getUserItems = async (userId) => {
+    try {
+        const response = await api.get(`/api/items/user/${userId}/items`);
+        return response.data; // Zakładam, że API zwraca tablicę ogłoszeń użytkownika
+    } catch (error) {
+        console.error("Błąd podczas pobierania ogłoszeń użytkownika:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+export const getUserReviews = async (userId) => {
+    try {
+        const response = await api.get(`/api/reviews/user/${userId}`);
+        return response.data; // Zakładam, że API zwraca tablicę opinii użytkownika
+    } catch (error) {
+        console.error("Błąd podczas pobierania opinii użytkownika:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+export const getUserAverageRating = async (userId) => {
+    try {
+        const response = await api.get(`/api/reviews/user/${userId}/average-rating`);
+        return response.data.averageRating; // Zakładam, że API zwraca obiekt { averageRating: liczba }
+    } catch (error) {
+        console.error("Błąd podczas pobierania średniej oceny użytkownika:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+
 export const updateDetails = async (userId, firstName, lastName, phoneNumber) => {
     try {
         const response = await api.put(`/api/users/${userId}/details`, {
@@ -164,7 +195,6 @@ export const addNewItem = async (itemData) => {
                 Authorization: `Bearer ${token}`,
             },
         };
-console.log(1);
         // Wysłanie żądania z tokenem
         const response = await api.post("/api/items", itemData, config);
 
@@ -181,7 +211,6 @@ console.log(1);
 export const fetchItems = async () => {
     try {
         const response = await api.get('/api/items');
-        console.log('Odpowiedź API:', response.data);
 
         return response.data; // Zwracamy pełną odpowiedź z API
     } catch (error) {
@@ -192,7 +221,6 @@ export const fetchItems = async () => {
 
 export const addToFavorites = async (favoriteItem) => {
     try {
-        console.log(favoriteItem);
         const response = await api.post(`/api/favorites/favorites/${favoriteItem}`, favoriteItem);
         return response.data;
     } catch (error) {
@@ -203,7 +231,6 @@ export const addToFavorites = async (favoriteItem) => {
 export const fetchFavorites = async () => {
     try {
         const response = await api.get("/api/favorites");
-        console.log("Fetched favorites:", response.data);
         return response.data; // Zakładam, że zwraca tablicę przedmiotów
     } catch (error) {
         console.error("Błąd podczas pobierania ulubionych przedmiotów:", error.response?.data || error.message);
@@ -235,7 +262,6 @@ export const checkIfFavorite = async (itemId) => {
 export const fetchItemById = async (itemId) => {
     try {
         const response = await api.get(`/api/items/${itemId}`);
-        console.log("Odpowiedź API dla szczegółów przedmiotu:", response.data);
         return response.data; // Zwraca pełne szczegóły przedmiotu, w tym like/dislike
     } catch (error) {
         console.error(`Błąd pobierania szczegółów przedmiotu ${itemId}:`, error.response?.data || error.message);
@@ -287,39 +313,5 @@ export const searchUsers = async (username) => {
         return response.data; // Zakładam, że API zwraca pojedynczego użytkownika jako obiekt
     } catch (error) {
         return null;
-    }
-};
-
-
-/* ========== UŻYTKOWNIK - OGŁOSZENIA ========== */
-
-// Funkcja pobierająca ogłoszenia danego użytkownika
-export const getUserItems = async (userId) => {
-    try {
-        const response = await api.get(`/api/items/user/${userId}/items`);
-        console.log(`Ogłoszenia użytkownika ${userId}:`, response.data);
-        return response.data; // Zakładam, że backend zwraca tablicę ogłoszeń
-    } catch (error) {
-        return null;
-    }
-};
-
-// Pobieranie opinii użytkownika
-export const getUserReviews = async (userId) => {
-    try {
-        const response = await api.get(`/api/reviews/user/${userId}`);
-        return response.data.reviews; // Zakładam, że backend zwraca tablicę opinii w polu 'reviews'
-    } catch (error) {
-        null;
-    }
-};
-
-// Pobieranie średniej oceny użytkownika
-export const getUserAverageRating = async (userId) => {
-    try {
-        const response = await api.get(`/api/reviews/user/${userId}/average-rating`);
-        return response.data.averageRating; // Zakładam, że backend zwraca średnią ocenę w polu 'averageRating'
-    } catch (error) {
-        null;
     }
 };

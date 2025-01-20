@@ -81,7 +81,6 @@ const AddItem = ({ navigation }) => {
             const parsedUser = JSON.parse(storedUser);
             setUser(parsedUser);
 
-            console.log("Pobrane dane użytkownika:", parsedUser);
         } catch (error) {
             console.error("Błąd pobierania użytkownika:", error);
         }
@@ -106,7 +105,6 @@ const AddItem = ({ navigation }) => {
     const fetchSubcategories = async (categoryId) => {
         try {
             const data = await getSubcategories(categoryId);
-            console.log(data);
 
             const mappedSubcategories = (data || []).map((sub) => ({
                 value: sub.subcategoryId,
@@ -196,7 +194,6 @@ const AddItem = ({ navigation }) => {
         };
 
         try {
-            console.log("Wysyłam dane:", newAdData);
             await addNewItem(newAdData);
             Alert.alert("Sukces", "Ogłoszenie zostało dodane pomyślnie.");
             navigation.navigate("Home");

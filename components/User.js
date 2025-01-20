@@ -20,6 +20,7 @@ import ItemCard from './ItemCard';
 import ReviewCard from './ReviewCard';
 import { renderStars } from './StarRating';
 
+
 // Importujemy funkcje z api.js
 import {
   getUserData,
@@ -29,6 +30,7 @@ import {
   checkIfFavorite,
   addToFavorites,
   removeFromFavorites,
+  getProfilePicture,
 } from '../api/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -36,6 +38,8 @@ const User = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { userId } = route.params || {};
+  const [profileImage, setProfileImage] = useState(null);
+
 
   // Logowanie otrzymanych parametrów
   console.log('User component received params:', route.params);
@@ -51,6 +55,7 @@ const User = () => {
   const [loading, setLoading] = useState(true); // Flaga ładowania
   const [error, setError] = useState(''); // Komunikat o błędzie
 
+
   useEffect(() => {
     if (!userId) {
       setError('Brak identyfikatora użytkownika.');
@@ -60,23 +65,30 @@ const User = () => {
 
     const fetchData = async () => {
       try {
+        setLoading(true);
+
         // Pobranie danych użytkownika
         const userData = await getUserData(userId);
+
+
         setUser(userData);
 
-        // Pobranie ogłoszeń użytkownika
+        // Pobranie ogłoszeń, opinii i średniej oceny
         const userItems = await getUserItems(userId);
         setItems(userItems);
 
-        // Pobranie opinii użytkownika z backendu
-        const userReviews = await getUserReviews(userId);
+        const userReviews = (await getUserReviews(userId)) || []; // Ustawienie pustej tablicy jako domyślnej wartości
         setReviews(userReviews);
 
-        // Pobranie średniej oceny użytkownika z backendu
-        const userAverageRating = await getUserAverageRating(userId);
+        const userAverageRating = (await getUserAverageRating(userId)) ?? 0; // Ustawienie 0 jako domyślnej wartości
         setAverageRating(userAverageRating);
 
-        // Sprawdzenie statusu polubień dla każdego ogłoszenia
+        const profilePicBase64 = await getProfilePicture(userId);
+        if (profilePicBase64) {
+          setProfileImage(`data:image/jpeg;base64,${profilePicBase64}`);
+        }
+
+        // Sprawdzenie polubień
         const favoriteStatuses = await Promise.all(
             userItems.map(async (item) => {
               const status = await checkIfFavorite(item.id);
@@ -84,12 +96,10 @@ const User = () => {
             })
         );
 
-        // Tworzenie obiektu z polubionymi ogłoszeniami
         const liked = {};
         favoriteStatuses.forEach((status) => {
           liked[status.itemId] = status.isFavorite;
         });
-
         setLikedItems(liked);
       } catch (err) {
         setError('Nie udało się pobrać danych użytkownika.');
@@ -167,13 +177,15 @@ const User = () => {
       <ScrollView style={styles.container}>
         <Navbar />
         <View style={styles.profileContainer}>
-          {user.profilePicture ? (
-              <Image source={{ uri: user.profilePicture }} style={styles.profileImage} />
-          ) : (
-              <View style={styles.noAvatarContainer}>
-                <Text style={styles.noAvatarText}>Brak awatara</Text>
-              </View>
-          )}
+          <TouchableOpacity style={styles.imageWrapper}>
+            {profileImage ? (
+                <Image source={{ uri: profileImage }} style={styles.profileImage} />
+            ) : (
+                <View style={styles.placeholder}>
+                  <Text style={styles.noAvatarText}>Brak zdjęcia</Text>
+                </View>
+            )}
+          </TouchableOpacity>
           <Text style={styles.username}>{user.username}</Text>
           <View style={styles.starsContainer}>
             {renderStars(averageRating)}
@@ -182,6 +194,8 @@ const User = () => {
             Średnia: {averageRating}/5 na podstawie {reviews.length} opinii
           </Text>
         </View>
+
+
         <View style={styles.contactContainer}>
           <Text style={styles.contactTitle}>Informacje Kontaktowe</Text>
           <View style={styles.contactRow}>
