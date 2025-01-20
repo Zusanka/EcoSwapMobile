@@ -131,7 +131,8 @@ const SearchResults = () => {
         return (
             <TouchableOpacity
                 style={styles.userCard}
-                onPress={() => navigation.navigate("UserProfile", { userId: user.id })}
+                onPress={
+                () => navigation.navigate("User", { userId: user.userId })}
             >
                 {user.avatarUrl ? (
                     <Image source={{ uri: user.avatarUrl }} style={styles.userAvatar} />

@@ -283,3 +283,17 @@ export const searchUsers = async (username) => {
         return null;
     }
 };
+
+
+/* ========== UŻYTKOWNIK - OGŁOSZENIA ========== */
+
+// Funkcja pobierająca ogłoszenia danego użytkownika
+export const getUserItems = async (userId) => {
+    try {
+        const response = await api.get(`/api/items/user/${userId}/items`);
+        console.log(`Ogłoszenia użytkownika ${userId}:`, response.data);
+        return response.data; // Zakładam, że backend zwraca tablicę ogłoszeń
+    } catch (error) {
+        return null;
+    }
+};

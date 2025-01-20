@@ -10,6 +10,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { register } from '../api/api';
 
 const Registration = () => {
   const [login, setLogin] = useState("");
@@ -23,6 +24,12 @@ const Registration = () => {
   const navigation = useNavigation();
 
   const handleRegister = async () => {
+    // Walidacja danych przed wysłaniem
+    if (!login || !email || !password || !firstName || !lastName || !phoneNumber) {
+      Alert.alert("Błąd", "Proszę wypełnić wszystkie pola.");
+      return;
+    }
+
     try {
       console.log("Rozpoczęcie procesu rejestracji...");
       console.log("Dane do wysłania:", {
@@ -34,40 +41,34 @@ const Registration = () => {
         phoneNumber: phoneNumber,
       });
 
-      const response = await fetch("http://192.168.1.104:8080/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: login,
-          email: email,
-          password: password,
-          firstName: firstName,
-          lastName: lastName,
-          phoneNumber: phoneNumber,
-        }),
+      // Wywołanie funkcji register z API
+      const data = await register({
+        username: login,
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+        phoneNumber: phoneNumber,
       });
 
-      if (response.ok) {
-        const data = await response.text();
-        console.log("Rejestracja przebiegła pomyślnie:", data);
+      console.log("Rejestracja przebiegła pomyślnie:", data);
 
-        Alert.alert("Sukces", data, [
-          {
-            text: "OK",
-            onPress: () => navigation.navigate("Login"),
-          },
-        ]);
-      } else {
-        const errorData = await response.text();
-        console.error("Błąd odpowiedzi serwera:", errorData);
-
-        Alert.alert("Błąd rejestracji", errorData || "Nieprawidłowe dane");
-      }
+      Alert.alert("Sukces", "Rejestracja zakończona pomyślnie.", [
+        {
+          text: "OK",
+          onPress: () => navigation.navigate("Login"),
+        },
+      ]);
     } catch (error) {
-      console.error("Błąd połączenia z serwerem:", error);
-      Alert.alert("Błąd", "Nie udało się połączyć z serwerem");
+      // Obsługa błędów
+      console.error("Błąd rejestracji:", error.response?.data || error.message);
+
+      // Sprawdzenie, czy serwer zwrócił szczegółowy komunikat błędu
+      const errorMessage =
+          error.response?.data?.message ||
+          "Nieprawidłowe dane lub problem z serwerem.";
+
+      Alert.alert("Błąd rejestracji", errorMessage);
     }
   };
 
@@ -103,6 +104,7 @@ const Registration = () => {
                 onChangeText={setEmail}
                 placeholder="Wpisz e-mail"
                 keyboardType="email-address"
+                autoCapitalize="none"
             />
           </View>
 
@@ -115,6 +117,7 @@ const Registration = () => {
                   onChangeText={setPassword}
                   placeholder="Wpisz hasło"
                   secureTextEntry={!showPassword}
+                  autoCapitalize="none"
               />
               <TouchableOpacity
                   onPress={() => setShowPassword((prev) => !prev)}
