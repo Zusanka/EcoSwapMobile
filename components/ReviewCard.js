@@ -1,20 +1,21 @@
+// ReviewCard.js
+
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { renderStars } from './StarRating'; // Import the renderStars function
+import { renderStars } from './StarRating'; // Import funkcji renderStars
 
-const ReviewCard = ({ username, rating, text, userImage, date }) => {
+const ReviewCard = ({ username, rating, description, userImage, date }) => {
     const formattedDate = date
         ? new Date(date).toLocaleDateString('pl-PL', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
         })
-        : 'Brak daty'; // In case 'date' is invalid or not provided, show "Brak daty"
+        : 'Brak daty';
 
     return (
         <View style={styles.container}>
             <View style={styles.userInfo}>
-                {/* User info section (Image and Name) */}
                 <View style={styles.imageContainer}>
                     {userImage ? (
                         <Image source={{ uri: userImage }} style={styles.userImage} />
@@ -31,7 +32,7 @@ const ReviewCard = ({ username, rating, text, userImage, date }) => {
 
             <View style={styles.reviewContent}>
                 <View style={styles.rating}>{renderStars(rating)}</View>
-                <Text style={styles.reviewText}>{text}</Text>
+                <Text style={styles.reviewText}>{description}</Text>
                 <Text style={styles.date}>{formattedDate}</Text>
             </View>
         </View>

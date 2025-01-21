@@ -99,26 +99,55 @@ export const getUserItems = async (userId) => {
     }
 };
 
+/* ========== OPINIE ========== */
+
+// Pobieranie opinii użytkownika
 export const getUserReviews = async (userId) => {
     try {
         const response = await api.get(`/api/reviews/user/${userId}`);
-        return response.data; // Zakładam, że API zwraca tablicę opinii użytkownika
+        console.log('getUserReviews response:', response.data); // Debugging
+        // Sprawdź strukturę odpowiedzi
+        if (response.data.reviews && Array.isArray(response.data.reviews)) {
+            return response.data.reviews; // Jeśli odpowiedź ma pole 'reviews'
+        }
+        if (Array.isArray(response.data)) {
+            return response.data; // Jeśli odpowiedź jest bezpośrednią tablicą
+        }
+        return []; // W przeciwnym razie, zwróć pustą tablicę
     } catch (error) {
         console.error("Błąd podczas pobierania opinii użytkownika:", error.response?.data || error.message);
-        throw error;
+        return []; // Zwracamy pustą tablicę w razie błędu
     }
 };
 
+// Pobieranie średniej oceny użytkownika
 export const getUserAverageRating = async (userId) => {
     try {
         const response = await api.get(`/api/reviews/user/${userId}/average-rating`);
-        return response.data.averageRating; // Zakładam, że API zwraca obiekt { averageRating: liczba }
+        console.log('getUserAverageRating response:', response.data); // Debugging
+        // Sprawdź strukturę odpowiedzi
+        if (typeof response.data.averageRating === 'number') {
+            return response.data.averageRating;
+        }
+        if (typeof response.data === 'number') {
+            return response.data; // Jeśli odpowiedź jest bezpośrednią wartością
+        }
+        return 0; // W przeciwnym razie, zwróć 0
     } catch (error) {
         console.error("Błąd podczas pobierania średniej oceny użytkownika:", error.response?.data || error.message);
-        throw error;
+        return 0; // Zwracamy 0 w razie błędu
     }
 };
 
+export const addReview = async (reviewData) => {
+    try {
+        const response = await api.post(`/api/reviews`, reviewData);
+        return response.data;
+    } catch (error) {
+        console.log("Błąd podczas dodawania opinii:", error.response?.data || error.message);
+        return null;
+    }
+};
 
 export const updateDetails = async (userId, firstName, lastName, phoneNumber) => {
     try {

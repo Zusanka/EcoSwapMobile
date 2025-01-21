@@ -1,29 +1,24 @@
 import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faStar } from '@fortawesome/free-solid-svg-icons';
+import { faStar, faStarHalfAlt } from '@fortawesome/free-solid-svg-icons';
+import { faStar as faRegStar } from '@fortawesome/free-regular-svg-icons'; // Poprawny import
 
-export const renderStars = (rating, onStarClick) => {
+export const renderStars = (rating) => {
+    const stars = [];
     const fullStars = Math.floor(rating);
-    const partialStar = rating - fullStars;
-
-    let stars = [];
+    const hasHalfStar = rating - fullStars >= 0.5;
 
     for (let i = 0; i < fullStars; i++) {
-        stars.push(
-            <TouchableOpacity key={`full-${i}`} onPress={() => onStarClick(i + 1)}>
-                <FontAwesomeIcon icon={faStar} size={24} color="#FFD700" />
-            </TouchableOpacity>
-        );
+        stars.push(<FontAwesomeIcon key={`star-full-${i}`} icon={faStar} size={16} color="#FFD700" />);
     }
 
-    const emptyStarsCount = 5 - fullStars;
-    for (let i = 0; i < emptyStarsCount; i++) {
-        stars.push(
-            <TouchableOpacity key={`empty-${i}`} onPress={() => onStarClick(fullStars + 1)}>
-                <FontAwesomeIcon icon={faStar} size={24} color="#d3d3d3" />
-            </TouchableOpacity>
-        );
+    if (hasHalfStar) {
+        stars.push(<FontAwesomeIcon key={`star-half`} icon={faStarHalfAlt} size={16} color="#FFD700" />);
+    }
+
+    while (stars.length < 5) {
+        stars.push(<FontAwesomeIcon key={`star-empty-${stars.length}`} icon={faRegStar} size={16} color="#FFD700" />);
     }
 
     return <View style={{ flexDirection: 'row' }}>{stars}</View>;
