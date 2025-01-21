@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#721c24',
+    color: 'red',
     fontSize: 16,
     textAlign: 'center',
   },
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   cancelButton: {
-    backgroundColor: '#f44336',
+    backgroundColor: 'red',
     padding: 12,
     borderRadius: 8,
     marginTop: 8,
@@ -392,10 +392,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   addReviewButton: {
-    backgroundColor: '#2196f3',
+    backgroundColor: 'blue',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 20,
     marginTop: 10,
+    marginRight: 20,
+    marginLeft: 20,
   },
   addReviewButtonText: {
     color: '#fff',
@@ -407,7 +409,7 @@ const styles = StyleSheet.create({
   noResultsText: { fontSize: 14, color: '#777', textAlign: 'center' },
   noReviewsText: { fontSize: 14, color: '#777', textAlign: 'center', marginTop: 10 },
   formErrorText: {
-    color: '#d32f2f',
+    color: 'red',
     fontSize: 14,
     marginBottom: 8,
     textAlign: 'center',

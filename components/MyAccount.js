@@ -184,8 +184,8 @@ const styles = StyleSheet.create({
     input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 16 },
     disabledInput: { backgroundColor: "#eee" },
     textArea: { height: 80 },
-    editButton: { backgroundColor: "blue", padding: 12, borderRadius: 8, alignItems: "center", marginTop: 10 },
-    saveButton: { backgroundColor: "green", padding: 12, borderRadius: 8, alignItems: "center", marginTop: 10 },
+    editButton: { backgroundColor: "blue", padding: 12, borderRadius: 20, alignItems: "center", marginTop: 10 },
+    saveButton: { backgroundColor: "green", padding: 12, borderRadius: 20, alignItems: "center", marginTop: 10 },
     buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });
 const checkToken = async () => {

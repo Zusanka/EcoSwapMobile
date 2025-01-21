@@ -135,10 +135,10 @@ const ReviewCard = ({
             {currentUserId === reviewerId && (
                 <View style={styles.actionIcons}>
                     <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.iconButton}>
-                        <FontAwesomeIcon icon={faPencilAlt} size={16} color="#007bff" />
+                        <FontAwesomeIcon icon={faPencilAlt} size={16} color="blue" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={handleDeleteReview} style={styles.iconButton}>
-                        <FontAwesomeIcon icon={faTrash} size={16} color="#dc3545" />
+                        <FontAwesomeIcon icon={faTrash} size={16} color="red" />
                     </TouchableOpacity>
                 </View>
             )}
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     cancelButton: {
-        backgroundColor: '#dc3545',
+        backgroundColor: 'red',
         padding: 8,
         borderRadius: 8,
     },

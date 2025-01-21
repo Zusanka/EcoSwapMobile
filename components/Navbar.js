@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
     View,
     Text,
-    TextInput,
     TouchableOpacity,
     StyleSheet
 } from "react-native";
@@ -27,27 +26,33 @@ const Navbar = () => {
     };
 
     const handleSearch = () => {
-
-            navigation.navigate("SearchResults");
-
+        navigation.navigate("SearchResults");
     };
 
     return (
         <View style={styles.navbar}>
-            <TouchableOpacity style={styles.iconButton}
-                              onPress={() => navigation.navigate("Home")}>
-            <Text style={styles.logo}>EcoSwap</Text>
+            <TouchableOpacity
+                style={styles.iconButton}
+                onPress={() => navigation.navigate("Home")}
+            >
+                <Text style={styles.logo}>EcoSwap</Text>
             </TouchableOpacity>
-                <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                    <FontAwesome name="search" size={20}  />
-                </TouchableOpacity>
+            <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+                <FontAwesome name="search" size={20} />
+            </TouchableOpacity>
 
             <View style={styles.iconContainer}>
-                <TouchableOpacity style={styles.iconButton}
-                                  onPress={() => navigation.navigate("Favorites")}
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => navigation.navigate("Favorites")}
                 >
                     <FontAwesome name="heart" size={24} color="red" />
-
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.iconButton}
+                    onPress={() => navigation.navigate("Messages")}
+                >
+                    <FontAwesome name="envelope" size={24} color="blue" />
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.iconButton}
@@ -78,20 +83,18 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
     logo: {
-        fontSize: 20,
+        fontSize: 25,
         fontWeight: "bold",
         color: "#28a745",
         fontFamily: "Dancing Script",
         flex: 1,
         textAlign: "left",
     },
-
-
     searchButton: {
         color: "#28a745",
         padding: 8,
         borderRadius: 20,
-        marginLeft: 60
+        marginLeft: 0,
     },
     iconContainer: {
         flexDirection: "row",
@@ -101,7 +104,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 8,
     },
     logoutButton: {
-        backgroundColor: "#dc3545",
+        backgroundColor: "red",
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 20,

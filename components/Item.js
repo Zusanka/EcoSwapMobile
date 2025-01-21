@@ -150,14 +150,16 @@ const styles = StyleSheet.create({
     favoriteButton: {
         paddingVertical: 10,
         paddingHorizontal: 20,
-        borderRadius: 5,
+        borderRadius: 20,
         alignItems: "center",
     },
     addFavoriteButton: {
         backgroundColor: "#28a745", // Zielone tło
     },
     removeFavoriteButton: {
-        backgroundColor: "#ff4d4d", // Czerwone tło
+        backgroundColor: "red", // Czerwone tło
+        marginLeft: 20,
+        marginRight: 20,
     },
     favoriteButtonText: {
         color: "#fff",
