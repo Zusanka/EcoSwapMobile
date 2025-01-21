@@ -51,7 +51,7 @@ const Registration = () => {
         phoneNumber: phoneNumber,
       });
 
-      console.log("Rejestracja przebiegła pomyślnie:", data);
+      console.log("Rejestracja przebiegła pomyślnie:", data.username);
 
       Alert.alert("Sukces", "Rejestracja zakończona pomyślnie.", [
         {

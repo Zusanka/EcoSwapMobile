@@ -57,7 +57,7 @@ export const login = async (credentials) => {
             await AsyncStorage.setItem("token", fullBearerToken);
             await AsyncStorage.setItem("user", JSON.stringify(response.data));
 
-            console.log("Zalogowano pomyślnie:", response.data);
+            console.log("Zalogowano pomyślnie:", response.data.token);
             return response.data;
         }
         throw new Error("Nieprawidłowa odpowiedź z serwera");
@@ -227,7 +227,7 @@ export const addNewItem = async (itemData) => {
         // Wysłanie żądania z tokenem
         const response = await api.post("/api/items", itemData, config);
 
-        console.log("Ogłoszenie dodane:", response.data);
+        console.log("Ogłoszenie dodane:", response.data.name);
         return response.data;
     } catch (error) {
         console.error("Błąd dodawania ogłoszenia:", error.response?.data || error.message);

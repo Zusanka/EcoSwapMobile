@@ -22,7 +22,7 @@ const Login = () => {
     try {
       // Wywołanie funkcji `login` z `api.js`
       const data = await login({ username: loginInput, password });
-      console.log("Zalogowano pomyślnie:", data);
+      console.log("Zalogowano pomyślnie:", data.token);
 
       Alert.alert("Sukces", "Zalogowano pomyślnie!");
       navigation.navigate("Home"); // Nawigacja do ekranu Home

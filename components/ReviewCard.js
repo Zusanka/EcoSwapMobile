@@ -1,12 +1,26 @@
 // ReviewCard.js
 
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { renderStars } from './StarRating'; // Import funkcji renderStars
+import React, {useEffect, useState} from 'react';
+import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import { renderStars } from './StarRating';
+import {fetchItems, getProfilePicture} from '../api/api';
 
-const ReviewCard = ({ username, rating, description, userImage, date }) => {
-    const formattedDate = date
-        ? new Date(date).toLocaleDateString('pl-PL', {
+const ReviewCard = ({ reviewId, userId, reviewerId, reviewerUsername, description, rating, createdAt}) => {
+
+    const [profileImage, setProfileImage] = useState(null);
+
+    useEffect(() => {
+        const loadProfilePicture = async () => {
+            const profilePicBase64 = await getProfilePicture(reviewerId);
+            if (profilePicBase64) {
+                setProfileImage(`data:image/jpeg;base64,${profilePicBase64}`);
+            }
+        }
+        loadProfilePicture();
+    }, []);
+
+    const formattedDate = createdAt
+        ? new Date(createdAt).toLocaleDateString('pl-PL', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
@@ -16,18 +30,16 @@ const ReviewCard = ({ username, rating, description, userImage, date }) => {
     return (
         <View style={styles.container}>
             <View style={styles.userInfo}>
-                <View style={styles.imageContainer}>
-                    {userImage ? (
-                        <Image source={{ uri: userImage }} style={styles.userImage} />
+                <TouchableOpacity style={styles.imageWrapper}>
+                    {profileImage ? (
+                        <Image source={{ uri: profileImage }} style={styles.profileImage} />
                     ) : (
                         <View style={styles.placeholder}>
-                            <Text style={styles.placeholderText}>
-                                {username?.charAt(0).toUpperCase()}
-                            </Text>
+                            <Text style={styles.noAvatarText}>Brak zdjęcia</Text>
                         </View>
                     )}
-                </View>
-                <Text style={styles.username}>{username}</Text>
+                </TouchableOpacity>
+                <Text style={styles.username}>{reviewerUsername}</Text>
             </View>
 
             <View style={styles.reviewContent}>
@@ -93,6 +105,22 @@ const styles = StyleSheet.create({
     date: {
         fontSize: 12,
         color: '#909090',
+    },
+    imageWrapper: {
+        width: 60,
+        height: 60,
+        borderRadius: 60,
+        overflow: "hidden",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#f0f0f0",
+    },
+
+    profileImage: {
+        width: "100%",
+        height: "100%",
+        borderRadius: 60, // Dla okrągłego obrazu
+        resizeMode: "cover",
     },
 });
 

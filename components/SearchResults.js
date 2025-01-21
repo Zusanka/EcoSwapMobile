@@ -79,7 +79,7 @@ const SearchResults = () => {
             // Wyszukiwanie użytkownika po stronie serwera
             const usersData = await searchUsers(searchQuery);
 
-            if (usersData) {
+            if (usersData.username) {
                 setUser(usersData);
                 const profilePicBase64 = await getProfilePicture(usersData.userId);
                 if (profilePicBase64) {

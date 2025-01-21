@@ -87,8 +87,8 @@ const User = () => {
         // Sprawdzenie polubień
         const favoriteStatuses = await Promise.all(
             userItems.map(async (item) => {
-              const status = await checkIfFavorite(item.id);
-              return { itemId: item.id, isFavorite: status.isFavorite };
+              const status = await checkIfFavorite(item.itemId);
+              return { itemId: item.itemId, isFavorite: status.isFavorite };
             })
         );
 
@@ -200,9 +200,6 @@ const User = () => {
     );
   }
 
-  // Debugging: Sprawdź strukturę danych
-  console.log('Reviews:', reviews);
-  console.log('Items:', items);
 
   // Determine the data and renderItem based on showReviews
   const data = showReviews ? reviews : items;
@@ -213,8 +210,8 @@ const User = () => {
       return (
           <ItemCard
               item={item}
-              liked={!!likedItems[item.id]}
-              onLike={() => handleLikeClick(item.id)}
+              liked={!!likedItems[item.itemId]}
+              onLike={() => handleLikeClick(item.itemId)}
           />
       );
     }
@@ -223,7 +220,7 @@ const User = () => {
   return (
       <FlatList
           data={data}
-          keyExtractor={(item, index) => (item.id || item.reviewId || index).toString()}
+          keyExtractor={(item, index) => (item.itemId || item.reviewId || index).toString()}
           renderItem={renderItem}
           ListHeaderComponent={
             <View>

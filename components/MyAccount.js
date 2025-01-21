@@ -57,7 +57,6 @@ const MyAccount = () => {
                 const profilePicBase64 = await getProfilePicture(user.id);
                 if (profilePicBase64) {
                     const uri = `data:image/jpeg;base64,${profilePicBase64}`;
-                    console.log("Poprawny URI zdjęcia profilowego:", uri); // Debuguj URI
                     setProfileImage(uri);
                 }
 
