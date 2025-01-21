@@ -138,7 +138,7 @@ export const getUserAverageRating = async (userId) => {
         return 0; // Zwracamy 0 w razie błędu
     }
 };
-
+// ------------------- OPINIE
 export const addReview = async (reviewData) => {
     try {
         const response = await api.post(`/api/reviews`, reviewData);
@@ -146,6 +146,27 @@ export const addReview = async (reviewData) => {
     } catch (error) {
         console.log("Błąd podczas dodawania opinii:", error.response?.data || error.message);
         return null;
+    }
+};
+// Aktualizacja opinii
+export const updateReview = async (reviewId, updatedReview) => {
+    try {
+        const response = await api.put(`/api/reviews/${reviewId}`, updatedReview);
+        return response.data;
+    } catch (error) {
+        console.error("Błąd podczas aktualizacji opinii:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+// Usuwanie opinii
+export const deleteReview = async (reviewId) => {
+    try {
+        const response = await api.delete(`/api/reviews/${reviewId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Błąd podczas usuwania opinii:", error.response?.data || error.message);
+        throw error;
     }
 };
 
@@ -194,14 +215,15 @@ export const getProfilePicture = async (userId) => {
         // Zakładam, że backend zwraca JSON o strukturze { image: "Base64" }
         const base64Image = response.data.image;
 
-        if (!base64Image) {
-            throw new Error("Brak obrazu w odpowiedzi.");
-        }
+        // if (!base64Image) {
+        //     throw new Error("Brak obrazu w odpowiedzi.");
+        // }
 
         return base64Image; // Zwróć dane obrazu w Base64
     } catch (error) {
         console.error("Błąd pobierania zdjęcia profilowego:", error.response?.data || error.message);
         throw error;
+
     }
 };
 

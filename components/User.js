@@ -1,5 +1,3 @@
-// User.js
-
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -18,7 +16,7 @@ import Navbar from './Navbar';
 import ItemCard from './ItemCard';
 import ReviewCard from './ReviewCard';
 import { renderStars } from './StarRating';
-import StarRatingInput from './StarRatingInput'; // Importujemy komponent do wyboru gwiazdek
+import StarRatingInput from './StarRatingInput';
 
 // Importujemy funkcje z api.js
 import {
@@ -30,7 +28,7 @@ import {
   addToFavorites,
   removeFromFavorites,
   getProfilePicture,
-  addReview, // Importujemy funkcję addReview
+  addReview,
 } from '../api/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -39,10 +37,6 @@ const User = () => {
   const route = useRoute();
   const { userId } = route.params || {};
   const [profileImage, setProfileImage] = useState(null);
-
-  // Logowanie otrzymanych parametrów
-  console.log('User component received params:', route.params);
-
   const [user, setUser] = useState(null); // Dane użytkownika
   const [items, setItems] = useState([]); // Ogłoszenia użytkownika
   const [reviews, setReviews] = useState([]); // Opinie użytkownika
@@ -50,9 +44,21 @@ const User = () => {
   const [likedItems, setLikedItems] = useState({}); // Stan polubień dla ogłoszeń
   const [showReviews, setShowReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [newReview, setNewReview] = useState({ rating: 0, description: '' }); // Aktualizacja stanu newReview
-  const [loading, setLoading] = useState(true); // Flaga ładowania
-  const [error, setError] = useState(''); // Komunikat o błędzie
+  const [newReview, setNewReview] = useState({ rating: 0, description: '' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Funkcja do odświeżania danych recenzji
+  const refreshReviews = async () => {
+    try {
+      const userReviews = (await getUserReviews(userId)) || [];
+      setReviews(userReviews);
+      const updatedAverage = await getUserAverageRating(userId);
+      setAverageRating(updatedAverage);
+    } catch (err) {
+      console.error('Błąd podczas odświeżania recenzji:', err);
+    }
+  };
 
   useEffect(() => {
     if (!userId) {
@@ -73,10 +79,10 @@ const User = () => {
         const userItems = await getUserItems(userId);
         setItems(userItems);
 
-        const userReviews = (await getUserReviews(userId)) || []; // Ustawienie pustej tablicy jako domyślnej wartości
+        const userReviews = (await getUserReviews(userId)) || [];
         setReviews(userReviews);
 
-        const userAverageRating = (await getUserAverageRating(userId)) ?? 0; // Ustawienie 0 jako domyślnej wartości
+        const userAverageRating = (await getUserAverageRating(userId)) ?? 0;
         setAverageRating(userAverageRating);
 
         const profilePicBase64 = await getProfilePicture(userId);
@@ -115,21 +121,17 @@ const User = () => {
   const handleLikeClick = async (itemId) => {
     try {
       if (likedItems[itemId]) {
-        // Usuwamy z ulubionych
         await removeFromFavorites(itemId);
       } else {
-        // Dodajemy do ulubionych
         await addToFavorites(itemId);
       }
 
-      // Aktualizujemy stan likedItems
       setLikedItems((prev) => ({
         ...prev,
         [itemId]: !prev[itemId],
       }));
     } catch (error) {
       console.error('Błąd przy aktualizacji ulubionych:', error);
-      // Opcjonalnie: Dodaj informację dla użytkownika o błędzie
     }
   };
 
@@ -147,16 +149,11 @@ const User = () => {
 
     try {
       setLoading(true);
-      const addedReview = await addReview(reviewData);
+      await addReview(reviewData);
 
-      // Sprawdź, czy addedReview ma 'id', jeśli nie, przypisz unikalny
-      if (!addedReview.id) {
-        addedReview.id = Date.now(); // Przykład przypisania unikalnego id
-      }
+      // Odśwież dane recenzji
+      await refreshReviews();
 
-      setReviews([...reviews, addedReview]);
-      const updatedAverage = await getUserAverageRating(userId);
-      setAverageRating(updatedAverage);
       setNewReview({ rating: 0, description: '' });
       setShowReviewForm(false);
       setError('');
@@ -200,18 +197,16 @@ const User = () => {
     );
   }
 
-
-  // Determine the data and renderItem based on showReviews
   const data = showReviews ? reviews : items;
   const renderItem = ({ item }) => {
     if (showReviews) {
-      return <ReviewCard {...item} />;
+      return <ReviewCard {...item} onReviewChange={refreshReviews} />;
     } else {
       return (
           <ItemCard
               item={item}
-              liked={!!likedItems[item.itemId]}
               onLike={() => handleLikeClick(item.itemId)}
+              liked={!!likedItems[item.itemId]}
           />
       );
     }
@@ -243,7 +238,6 @@ const User = () => {
                   Średnia: {averageRating}/5 na podstawie {reviews.length} opinii
                 </Text>
               </View>
-
               <View style={styles.contactContainer}>
                 <Text style={styles.contactTitle}>Informacje Kontaktowe</Text>
                 <View style={styles.contactRow}>
@@ -313,6 +307,7 @@ const User = () => {
       />
   );
 };
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f9f9f9' },
