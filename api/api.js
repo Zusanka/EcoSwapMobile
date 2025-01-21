@@ -366,3 +366,59 @@ export const searchUsers = async (username) => {
         return null;
     }
 };
+/* ========== ROZMOWY ========== */
+
+// Pobieranie wiadomości z danej rozmowy
+export const getMessages = async (conversationId) => {
+    try {
+        const response = await api.get(`/api/conversations/${conversationId}/messages`);
+        return response.data;
+    } catch (error) {
+        console.error(`Błąd podczas pobierania wiadomości dla rozmowy ${conversationId}:`, error.response?.data || error.message);
+        throw error;
+    }
+};
+
+// Wysyłanie nowej wiadomości w rozmowie
+export const sendMessage = async (conversationId, messageData) => {
+    try {
+        // Usuń nadmiarowe cudzysłowy, jeśli istnieją
+        if (messageData.startsWith('"') && messageData.endsWith('"')) {
+            messageData = JSON.parse(messageData);
+        }
+
+        // Wyślij dane jako surowy string
+        const response = await api.post(`/api/conversations/${conversationId}/messages`, messageData, {
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error(`Błąd podczas wysyłania wiadomości w rozmowie ${conversationId}:`, error.response?.data || error.message);
+        throw error;
+    }
+};
+
+// Rozpoczęcie nowej rozmowy na podstawie ID przedmiotu
+export const startConversation = async (itemId, conversationData) => {
+    try {
+        const response = await api.post(`/api/conversations/start/${itemId}`, conversationData);
+        return response.data;
+    } catch (error) {
+        console.error(`Błąd podczas rozpoczynania rozmowy dla przedmiotu ${itemId}:`, error.response?.data || error.message);
+        throw error;
+    }
+};
+
+// Pobieranie wszystkich rozmów użytkownika
+export const getConversations = async () => {
+    try {
+        const response = await api.get(`/api/conversations`);
+        return response.data;
+    } catch (error) {
+        console.error("Błąd podczas pobierania rozmów:", error.response?.data || error.message);
+        throw error;
+    }
+};

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -8,98 +8,146 @@ import {
     FlatList,
     StyleSheet,
     ScrollView,
+    ActivityIndicator,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getConversations, getMessages, sendMessage } from "../api/api"; // Import metod API
 
 const Messages = () => {
-    const [selectedUser, setSelectedUser] = useState(null);
+    const [conversations, setConversations] = useState([]); // Lista konwersacji
+    const [selectedConversation, setSelectedConversation] = useState(null); // Wybrana konwersacja
+    const [messages, setMessages] = useState([]); // Wiadomości w wybranej konwersacji
     const [message, setMessage] = useState("");
-    const [users] = useState([
-        { id: 1, name: "Koszula z królikami", lastMessage: "Dzień dobry, można prosić o wymiary bluzki?", lastMessageTime: "17:54", clothingImage: require("../assets/6.jpeg") },
-        { id: 2, name: "Plecak", lastMessage: "Wiadomość", lastMessageTime: "1:00", clothingImage: require("../assets/2.jpeg") },
-        { id: 3, name: "T-shirt", lastMessage: "Gdzie jest moje zamówienie?", lastMessageTime: "2:00", clothingImage: require("../assets/1.jpeg") },
-    ]);
+    const [loading, setLoading] = useState(false);
+    const [currentUserName, setCurrentUserName] = useState(null); // Nazwa zalogowanego użytkownika
 
-    const [messages, setMessages] = useState({
-        1: [
-            { text: "Dzień dobry, można prosić o wymiary bluzki?", isUser: true, timestamp: "17:54" },
-            { text: "Odpowiedź z drugiej strony", isUser: false, timestamp: "17:54" },
-        ],
-        2: [
-            { text: "Hello, User 2!", isUser: true, timestamp: "1:00 PM" },
-            { text: "How can I assist you?", isUser: false, timestamp: "1:05 PM" },
-        ],
-        3: [
-            { text: "Hello, User 3!", isUser: true, timestamp: "2:00 PM" },
-            { text: "Where is my order?", isUser: false, timestamp: "2:05 PM" },
-        ],
-    });
-
-    const openChat = (user) => {
-        setSelectedUser(user);
+    // Funkcja do pobrania bieżącego użytkownika
+    const loadCurrentUser = async () => {
+        const user = await AsyncStorage.getItem("user");
+        if (user) {
+            const parsedUser = JSON.parse(user);
+            setCurrentUserName(parsedUser.username);
+        }
     };
 
-    const handleSendMessage = () => {
-        if (message.trim()) {
-            const newMessage = {
-                text: message,
-                isUser: true,
-                timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-            };
-            setMessages((prevMessages) => ({
-                ...prevMessages,
-                [selectedUser.id]: [...prevMessages[selectedUser.id], newMessage],
-            }));
-            setMessage("");
+    // Funkcja do pobrania konwersacji
+    const fetchConversations = async () => {
+        try {
+            const response = await getConversations();
+            setConversations(response);
+        } catch (error) {
+            console.error("Błąd podczas pobierania konwersacji:", error);
         }
+    };
+
+    // Funkcja do pobrania wiadomości dla wybranej konwersacji
+    const fetchMessages = async (conversationId) => {
+        try {
+            setLoading(true);
+            const response = await getMessages(conversationId);
+            setMessages(response);
+        } catch (error) {
+            console.error(`Błąd podczas pobierania wiadomości dla rozmowy ${conversationId}:`, error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Obsługa kliknięcia w konwersację
+    const openChat = (conversation) => {
+        setSelectedConversation(conversation);
+        fetchMessages(conversation.conversationId); // Pobierz wiadomości dla wybranej konwersacji
+    };
+
+    // Obsługa wysyłania wiadomości
+    const handleSendMessage = async () => {
+        if (message.trim() && selectedConversation) {
+            try {
+                const newMessage = {
+                    senderName: currentUserName,
+                    content: message.trim(),
+                    sentAt: new Date().toISOString(), // Ustawiamy aktualną datę
+                };
+
+                // Wysyłamy wiadomość za pomocą API
+                await sendMessage(selectedConversation.conversationId, message);
+
+                // Dodajemy wiadomość do widoku
+                setMessages((prevMessages) => [...prevMessages, newMessage]);
+                setMessage(""); // Czyścimy pole tekstowe
+            } catch (error) {
+                console.error("Błąd podczas wysyłania wiadomości:", error);
+            }
+        }
+    };
+
+    // Pobierz dane przy montowaniu komponentu
+    useEffect(() => {
+        loadCurrentUser();
+        fetchConversations();
+    }, []);
+
+    // Funkcja do formatowania daty
+    const formatDate = (isoDate) => {
+        const date = new Date(isoDate);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        return `${day}.${month}.${year} ${hours}:${minutes}`;
     };
 
     return (
         <View style={styles.container}>
             <View style={styles.userList}>
                 <FlatList
-                    data={users}
-                    keyExtractor={(item) => item.id.toString()}
+                    data={conversations}
+                    keyExtractor={(item) => item.itemId}
                     renderItem={({ item }) => (
                         <TouchableOpacity
                             style={styles.userItem}
                             onPress={() => openChat(item)}
                         >
-                            <Image source={item.clothingImage} style={styles.userImage} />
-                            <View style={styles.userInfo}>
-                                <Text style={styles.userName}>{item.name}</Text>
-                                <Text style={styles.lastMessage}>{item.lastMessage}</Text>
-                                <Text style={styles.messageTime}>{item.lastMessageTime}</Text>
-                            </View>
+                            <Image source={{ uri: item.image }} style={styles.userImage} />
                         </TouchableOpacity>
                     )}
                 />
             </View>
             <View style={styles.chatContainer}>
-                {selectedUser ? (
+                {selectedConversation ? (
                     <>
                         <View style={styles.chatHeader}>
                             <View style={styles.chatHeaderInfo}>
                                 <Image
-                                    source={selectedUser.clothingImage}
+                                    source={{ uri: selectedConversation.image }}
                                     style={styles.chatHeaderImage}
                                 />
-                                <Text style={styles.chatHeaderName}>{selectedUser.name}</Text>
+                                <Text style={styles.chatHeaderName}>{selectedConversation.name}</Text>
                             </View>
                         </View>
                         <ScrollView style={styles.messages}>
-                            {messages[selectedUser.id].map((msg, index) => (
-                                <View
-                                    key={index}
-                                    style={[
-                                        styles.messageBubble,
-                                        msg.isUser ? styles.userMessage : styles.otherMessage,
-                                    ]}
-                                >
-                                    <Text style={styles.messageText}>{msg.text}</Text>
-                                    <Text style={styles.messageTime}>{msg.timestamp}</Text>
-                                </View>
-                            ))}
+                            {loading ? (
+                                <ActivityIndicator size="large" color="#007bff" />
+                            ) : (
+                                messages.map((msg, index) => (
+                                    <View
+                                        key={index}
+                                        style={[
+                                            styles.messageBubble,
+                                            msg.senderName === currentUserName
+                                                ? styles.userMessage
+                                                : styles.otherMessage,
+                                        ]}
+                                    >
+                                        <Text style={styles.messageText}>{msg.content}</Text>
+                                        <Text style={styles.messageTime}>
+                                            {formatDate(msg.sentAt)}
+                                        </Text>
+                                    </View>
+                                ))
+                            )}
                         </ScrollView>
                         <View style={styles.messageInputContainer}>
                             <TextInput
@@ -133,7 +181,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f8f8f8",
     },
     userList: {
-        width: "30%",
+        width: "18%",
         backgroundColor: "#fff",
         borderRightWidth: 1,
         borderRightColor: "#ccc",
@@ -149,21 +197,6 @@ const styles = StyleSheet.create({
         height: 50,
         borderRadius: 25,
     },
-    userInfo: {
-        marginLeft: 10,
-    },
-    userName: {
-        fontSize: 16,
-        fontWeight: "bold",
-    },
-    lastMessage: {
-        fontSize: 14,
-        color: "#666",
-    },
-    // messageTime: {
-    //     fontSize: 12,
-    //     color: "#999",
-    // },
     chatContainer: {
         flex: 1,
         padding: 10,
