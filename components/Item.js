@@ -7,6 +7,7 @@ import {
     ScrollView,
     StyleSheet,
     TextInput,
+    Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -16,6 +17,8 @@ import {
     removeFromFavorites,
     checkIfFavorite,
     startConversation,
+    deleteItem,
+    getUserItems,
 } from "../api/api";
 import { FontAwesome } from "@expo/vector-icons";
 
@@ -57,11 +60,13 @@ const Item = ({ route }) => {
                 setFormData({
                     ...itemData,
                     isFavorite: isFavorite,
+                    isOwner: itemData.user.userId === user.id, // Sprawdzenie, czy użytkownik jest właścicielem
                 });
             } else {
                 setFormData({
                     ...itemData,
                     isFavorite: false,
+                    isOwner: false,
                 });
             }
         } catch (error) {
@@ -97,15 +102,14 @@ const Item = ({ route }) => {
 
         try {
             const conversationData = {
-                message: message.trim(), // Treść pierwszej wiadomości
+                senderName: user.name,
+                content: message.trim(),
+                sentAt: new Date().toISOString(), // Ustawiamy aktualną datę
             };
 
-            // Wywołanie API, aby rozpocząć nową konwersację
-            const newConversation = await startConversation(formData.itemId, conversationData);
+            const newConversation = await startConversation(formData.itemId, message);
             console.log("Rozpoczęto nową rozmowę:", newConversation);
-            // Resetujemy pole wiadomości
             setMessage("");
-            // Przeniesienie do widoku Messages
             navigation.navigate("Messages", {
                 conversationId: newConversation.conversationId,
                 itemId: newConversation.itemId,
@@ -118,8 +122,33 @@ const Item = ({ route }) => {
         }
     };
 
+    const handleDeleteItem = async () => {
+        Alert.alert(
+            "Potwierdzenie",
+            "Czy na pewno chcesz usunąć to ogłoszenie?",
+            [
+                { text: "Anuluj", style: "cancel" },
+                {
+                    text: "Usuń",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await deleteItem(itemId);
+                            alert("Ogłoszenie zostało usunięte.");
+                            navigation.goBack();
+                        } catch (error) {
+                            console.error("Błąd przy usuwaniu ogłoszenia:", error.message);
+                            alert("Nie udało się usunąć ogłoszenia.");
+                        }
+                    },
+                },
+            ]
+        );
+    };
 
-
+    const handleFinishItem = () => {
+        alert("Funkcja zakończenia ogłoszenia nie została jeszcze zaimplementowana.");
+    };
 
     if (loading) {
         return (
@@ -169,6 +198,22 @@ const Item = ({ route }) => {
                                 : "Dodaj do ulubionych"}
                         </Text>
                     </TouchableOpacity>
+                    {formData.isOwner && (
+                        <View style={styles.ownerActions}>
+                            <TouchableOpacity
+                                style={[styles.actionButton, styles.deleteButton]}
+                                onPress={handleDeleteItem}
+                            >
+                                <Text style={styles.actionButtonText}>Usuń ogłoszenie</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.actionButton, styles.finishButton]}
+                                onPress={handleFinishItem}
+                            >
+                                <Text style={styles.actionButtonText}>Zakończ ogłoszenie</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
             </ScrollView>
 
@@ -250,6 +295,32 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         marginBottom: 20,
+    },
+    ownerActions: {
+        flexDirection: "row", // Ustawiamy elementy w rzędzie
+        justifyContent: "space-between", // Równomierne rozmieszczenie przycisków
+        marginHorizontal: 20, // Dodajemy odstęp po bokach
+        marginTop: 20,
+    },
+    actionButton: {
+        flex: 1, // Przyciski będą równo dzielić przestrzeń
+        padding: 5,
+        borderRadius: 20,
+        alignItems: "center",
+    },
+    deleteButton: {
+        justifyContent: "center", // Wyśrodkowanie w poziomie
+        alignItems: "center", // Wyśrodkowanie w pionie
+        backgroundColor: "red", // Czerwony przycisk dla "Usuń ogłoszenie"
+        marginRight: 10, // Odstęp między przyciskami
+    },
+    finishButton: {
+        backgroundColor: "blue", // Zielony przycisk dla "Zakończ ogłoszenie"
+        marginLeft: 10, // Odstęp między przyciskami
+    },
+    actionButtonText: {
+        color: "#fff",
+        fontSize: 16,
     },
 });
 

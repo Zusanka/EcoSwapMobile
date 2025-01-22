@@ -256,6 +256,33 @@ export const addNewItem = async (itemData) => {
         throw error;
     }
 };
+// Usuwanie ogłoszenia, jeśli użytkownik jest jego właścicielem
+export const deleteItem = async (itemId) => {
+    try {
+        // Pobranie tokena z AsyncStorage
+        const token = await AsyncStorage.getItem("token");
+
+        if (!token) {
+            throw new Error("Token nie został znaleziony. Użytkownik nie jest zalogowany.");
+        }
+
+        // Konfiguracja nagłówków z tokenem
+        const config = {
+            headers: {
+                Authorization: token, // Token zawiera już "Bearer <JWT>"
+            },
+        };
+
+        // Wysłanie żądania DELETE do endpointu
+        const response = await api.delete(`/api/items/${itemId}`, config);
+
+        console.log("Ogłoszenie zostało usunięte:", itemId);
+        return response.data;
+    } catch (error) {
+        console.error("Błąd podczas usuwania ogłoszenia:", error.response?.data || error.message);
+        throw error;
+    }
+};
 
 
 // Funkcja pobierająca dane z endpointu /api/items
@@ -404,10 +431,21 @@ export const sendMessage = async (conversationId, messageData) => {
 // Rozpoczęcie nowej rozmowy na podstawie ID przedmiotu
 export const startConversation = async (itemId, conversationData) => {
     try {
-        const response = await api.post(`/api/conversations/start/${itemId}`, conversationData);
+        // Usuń nadmiarowe cudzysłowy, jeśli istnieją
+        if (conversationData.startsWith('"') && conversationData.endsWith('"')) {
+            conversationData = JSON.parse(conversationData);
+        }
+
+        // Wyślij dane jako surowy string
+        const response = await api.post(`/api/conversations/start/${itemId}`, conversationData, {
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+        });
+
         return response.data;
     } catch (error) {
-        console.error(`Błąd podczas rozpoczynania rozmowy dla przedmiotu ${itemId}:`, error.response?.data || error.message);
+        console.error(`Błąd podczas rozpoczęcia czatu ${itemId}:`, error.response?.data || error.message);
         throw error;
     }
 };
