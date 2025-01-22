@@ -15,6 +15,7 @@ import {
     addToFavorites,
     removeFromFavorites,
     checkIfFavorite,
+    startConversation,
 } from "../api/api";
 import { FontAwesome } from "@expo/vector-icons";
 
@@ -89,13 +90,36 @@ const Item = ({ route }) => {
         }
     };
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         if (message.trim() === "") {
-            return;
+            return; // Nie wysyłamy pustych wiadomości
         }
-        console.log("Wysłano wiadomość:", message);
-        setMessage("");
+
+        try {
+            const conversationData = {
+                message: message.trim(), // Treść pierwszej wiadomości
+            };
+
+            // Wywołanie API, aby rozpocząć nową konwersację
+            const newConversation = await startConversation(formData.itemId, conversationData);
+            console.log("Rozpoczęto nową rozmowę:", newConversation);
+            // Resetujemy pole wiadomości
+            setMessage("");
+            // Przeniesienie do widoku Messages
+            navigation.navigate("Messages", {
+                conversationId: newConversation.conversationId,
+                itemId: newConversation.itemId,
+                itemName: newConversation.itemName,
+                otherUserName: newConversation.otherUserName,
+            });
+        } catch (error) {
+            console.error("Błąd przy rozpoczynaniu rozmowy:", error.message);
+            alert("Nie udało się rozpocząć rozmowy. Spróbuj ponownie.");
+        }
     };
+
+
+
 
     if (loading) {
         return (

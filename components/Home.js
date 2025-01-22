@@ -128,13 +128,13 @@ const Home = () => {
                     style={styles.authButton}
                     onPress={() => navigation.navigate("Register")}
                 >
-                  <Text style={styles.authButtonText}>ZAREJESTRUJ SIĘ</Text>
+                  <Text style={styles.authButtonText}>Zarejestruj się</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.authButton, styles.loginButton]}
                     onPress={() => navigation.navigate("Login")}
                 >
-                  <Text style={styles.authButtonText}>ZALOGUJ SIĘ</Text>
+                  <Text style={styles.authButtonTextLogin}>Zaloguj się</Text>
                 </TouchableOpacity>
               </View>
           )}
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   authButton: {
-    backgroundColor: "#28a745",
+    backgroundColor: "blue",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -240,9 +240,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   loginButton: {
-    backgroundColor: "blue",
+    backgroundColor: "#28a745",
   },
   authButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  authButtonTextLogin: {
     color: "#fff",
     fontSize: 14,
     fontWeight: "bold",
