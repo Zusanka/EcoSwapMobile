@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   loginButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "blue",
   },
   authButtonText: {
     color: "#fff",

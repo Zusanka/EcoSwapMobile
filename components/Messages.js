@@ -124,7 +124,7 @@ const Messages = () => {
                                     source={{ uri: selectedConversation.image }}
                                     style={styles.chatHeaderImage}
                                 />
-                                <Text style={styles.chatHeaderName}>{selectedConversation.name}</Text>
+                                <Text style={styles.chatHeaderName}>{selectedConversation.itemName}</Text>
                             </View>
                         </View>
                         <ScrollView style={styles.messages}>
@@ -219,6 +219,7 @@ const styles = StyleSheet.create({
     chatHeaderName: {
         fontSize: 18,
         fontWeight: "bold",
+        color:"black",
     },
     messages: {
         flex: 1,
@@ -258,6 +259,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 8,
         marginRight: 10,
+        marginBottom: 20,
     },
     sendButton: {
         width: 40,
@@ -266,6 +268,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#007bff",
         justifyContent: "center",
         alignItems: "center",
+        marginBottom: 20,
     },
     noChatSelected: {
         flex: 1,
