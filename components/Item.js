@@ -77,8 +77,14 @@ const Item = ({ route }) => {
         }
     };
 
+    const isValidBase64 = (str) => {
+        if (typeof str !== "string") return false;
+        const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/; // RegEx dla Base64
+        return base64Regex.test(str);
+    };
+
     const toggleFavorite = async () => {
-        if (!formData) return;
+
         try {
             if (formData.isFavorite) {
                 await removeFromFavorites(itemId);
@@ -112,9 +118,6 @@ const Item = ({ route }) => {
             setMessage("");
             navigation.navigate("Messages", {
                 conversationId: newConversation.conversationId,
-                itemId: newConversation.itemId,
-                itemName: newConversation.itemName,
-                otherUserName: newConversation.otherUserName,
             });
         } catch (error) {
             console.error("Błąd przy rozpoczynaniu rozmowy:", error.message);
@@ -171,13 +174,27 @@ const Item = ({ route }) => {
             <ScrollView style={styles.scrollContainer}>
                 <View style={styles.imageSection}>
                     {formData.images?.length > 0 ? (
-                        <Image source={{ uri: formData.images[0] }} style={styles.mainImage} />
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={styles.imageCarousel}
+                        >
+                            {formData.images.map((item, index) => (
+                            <View key={index} style={styles.carouselImageContainer}>
+                                <Image
+                                    source={{ uri: `data:image/jpeg;base64,${item.image}` }}
+                                    style={styles.carouselImage}
+                                />
+                            </View>
+                        ))}
+                        </ScrollView>
                     ) : (
                         <View style={styles.noImageContainer}>
                             <Text>Brak zdjęcia</Text>
                         </View>
                     )}
                 </View>
+
 
                 <View style={styles.detailsSection}>
                     <Text style={styles.title}>{formData.name}</Text>
@@ -210,7 +227,7 @@ const Item = ({ route }) => {
                                 style={[styles.actionButton, styles.finishButton]}
                                 onPress={handleFinishItem}
                             >
-                                <Text style={styles.actionButtonText}>Zakończ ogłoszenie</Text>
+                                <Text style={styles.actionButtonText}>Edytuj ogłoszenie</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -322,6 +339,22 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 16,
     },
+    imageCarousel: {
+        height: 300, // Wysokość widoku dla zdjęć
+        marginBottom: 10,
+    },
+    carouselImageContainer: {
+        width: 300, // Szerokość każdego obrazu
+        marginRight: 10, // Odstęp między zdjęciami
+        borderRadius: 10, // Zaokrąglone rogi dla estetyki
+        overflow: "hidden",
+    },
+    carouselImage: {
+        width: "100%",
+        height: "100%",
+        resizeMode: "cover", // Obraz dostosowuje się do pojemnika
+    },
+
 });
 
 export default Item;

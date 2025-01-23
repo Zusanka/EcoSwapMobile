@@ -6,29 +6,70 @@ import {
     Image,
     StyleSheet,
     FlatList,
+    Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesome } from "@expo/vector-icons";
 
-const ImageUploader = ({ images, onImageUpload, onRemoveImage }) => {
+const ImageUploader = ({ images, onImageUpload, onRemoveImage, userId }) => {
     const handleImagePick = async () => {
+        if (!userId) {
+            Alert.alert("Błąd", "Brak ID użytkownika. Zaloguj się ponownie.");
+            return;
+        }
+
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== "granted") {
-            alert("Potrzebne pozwolenie na dostęp do galerii!");
+            Alert.alert("Błąd", "Potrzebne pozwolenie na dostęp do galerii!");
             return;
         }
 
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsMultipleSelection: true,
             quality: 1,
+            base64: true,
+            allowsMultipleSelection: true, // Obsługa wielu zdjęć
         });
 
-        if (!result.canceled) {
-            const selectedImages = result.assets ? result.assets.map((asset) => asset.uri) : [result.uri];
-            onImageUpload(selectedImages);
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            try {
+                // Przekształcenie obrazów na tablicę Base64
+                const images = result.assets.map((asset) => {
+                    if (!asset.base64) {
+                        throw new Error("Błąd konwersji zdjęcia do Base64");
+                    }
+                    return asset.base64; // Każdy obraz pozostaje jako Base64 string
+                });
+
+                // Przekaż sformatowaną tablicę images do odpowiedniej metody
+                onImageUpload(images);
+            } catch (err) {
+                Alert.alert("Błąd", err.message);
+            }
         }
+
     };
+
+    const renderImage = ({ item, index }) => (
+        <View style={styles.imageContainer}>
+            {item ? (
+                <View style={styles.imageWrapper}>
+                    <Image
+                        source={{ uri: `data:image/jpeg;base64,${item}` }} // Dodanie prefiksu Base64
+                        style={styles.image}
+                    />
+                    <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() => onRemoveImage(index)}
+                    >
+                        <FontAwesome name="times" size={16} color="#fff" />
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <FontAwesome name="camera" size={24} color="#ccc" />
+            )}
+        </View>
+    );
 
     return (
         <View>
@@ -43,30 +84,11 @@ const ImageUploader = ({ images, onImageUpload, onRemoveImage }) => {
             </TouchableOpacity>
 
             <FlatList
-                data={[...Array(6)]}
+                data={images}
                 numColumns={3}
                 keyExtractor={(_, index) => index.toString()}
                 contentContainerStyle={styles.imageGrid}
-                renderItem={({ index }) => (
-                    <View style={styles.imageContainer}>
-                        {images[index] ? (
-                            <View style={styles.imageWrapper}>
-                                <Image
-                                    source={{ uri: images[index] }}
-                                    style={styles.image}
-                                />
-                                <TouchableOpacity
-                                    style={styles.removeButton}
-                                    onPress={() => onRemoveImage(index)}
-                                >
-                                    <FontAwesome name="times" size={16} color="#fff" />
-                                </TouchableOpacity>
-                            </View>
-                        ) : (
-                            <FontAwesome name="camera" size={24} color="#ccc" />
-                        )}
-                    </View>
-                )}
+                renderItem={renderImage}
             />
         </View>
     );

@@ -5,7 +5,7 @@ global.Buffer = Buffer;
 
 
 // Adres Twojego backendu
-const API_URL = "http://192.168.1.104:8080";
+const API_URL = "http://192.168.1.111:8080";
 
 // Tworzymy instancję axios z domyślnym URL i nagłówkami
 const api = axios.create({

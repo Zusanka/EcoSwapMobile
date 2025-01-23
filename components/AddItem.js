@@ -19,23 +19,19 @@ import CustomSelect from "./CustomSelect";
 
 import { addNewItem, getCategories, getBrands, getSubcategories } from "../api/api";
 
-// Mapa stanów na wartości w API
 const conditionMap = {
-    //NOWY, BARDZO_DOBRY, DOBRY, DOSTATECZNY
     new_with_tag: "NOWY",
     very_good: "BARDZO_DOBRY",
     good: "DOBRY",
     enough: "DOSTATECZNY",
 };
 
-// Mapa rodzajów aukcji na wartości w API
 const auctionTypeMap = {
     free: "ZA_DARMO",
     exchange: "WYMIANA",
     sell: "SPRZEDAZ",
 };
 
-// Opcje do selecta
 const conditionOptions = [
     { value: "new_with_tag", label: "Nowy" },
     { value: "very_good", label: "Prawie nowy" },
@@ -67,7 +63,6 @@ const AddItem = ({ navigation }) => {
     const [subcategories, setSubcategories] = useState([]);
     const [brands, setBrands] = useState([]);
 
-    // Pobieramy usera z AsyncStorage
     const fetchUser = async () => {
         try {
             const storedUser = await AsyncStorage.getItem("user");
@@ -80,13 +75,11 @@ const AddItem = ({ navigation }) => {
             }
             const parsedUser = JSON.parse(storedUser);
             setUser(parsedUser);
-
         } catch (error) {
             console.error("Błąd pobierania użytkownika:", error);
         }
     };
 
-    // Pobranie kategorii
     const fetchCategories = async () => {
         try {
             const data = await getCategories();
@@ -101,11 +94,9 @@ const AddItem = ({ navigation }) => {
         }
     };
 
-    // Pobranie subkategorii po wyborze kategorii
     const fetchSubcategories = async (categoryId) => {
         try {
             const data = await getSubcategories(categoryId);
-
             const mappedSubcategories = (data || []).map((sub) => ({
                 value: sub.subcategoryId,
                 label: sub.name,
@@ -120,11 +111,10 @@ const AddItem = ({ navigation }) => {
     useEffect(() => {
         if (selectedCategory) {
             fetchSubcategories(selectedCategory.value);
-            setSelectedSubcategory(null); // Resetujemy subkategorię po zmianie kategorii
+            setSelectedSubcategory(null);
         }
     }, [selectedCategory]);
 
-    // Pobranie marek
     const fetchBrands = async () => {
         try {
             const data = await getBrands();
@@ -146,14 +136,6 @@ const AddItem = ({ navigation }) => {
         });
     }, []);
 
-    useEffect(() => {
-        if (selectedCategory) {
-            fetchSubcategories(selectedCategory.value);
-            setSelectedSubcategory(null); // Resetujemy subkategorię po zmianie kategorii
-        }
-    }, [selectedCategory]);
-
-    // Dodawanie ogłoszenia
     const handleSubmit = async () => {
         if (!user) {
             Alert.alert("Błąd", "Nie jesteś zalogowany. Zaloguj się ponownie.");
@@ -215,94 +197,104 @@ const AddItem = ({ navigation }) => {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container}
         >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.innerContainer}>
-                    <Navbar />
-                    <FlatList
-                        data={[{ key: "form" }]}
-                        keyExtractor={(item) => item.key}
-                        renderItem={() => (
-                            <View style={styles.formContainer}>
-                                <Text style={styles.header}>Dodaj ogłoszenie</Text>
-
-                                <ImageUploader images={images} onImageUpload={setImages} />
-
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Tytuł ogłoszenia:</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        value={title}
-                                        onChangeText={setTitle}
-                                        placeholder="np. Nowa bluzka do oddania"
-                                    />
-                                </View>
-
-                                <View style={styles.formGroup}>
-                                    <Text style={styles.label}>Opis ogłoszenia:</Text>
-                                    <TextInput
-                                        style={[styles.input, styles.textArea]}
-                                        value={description}
-                                        onChangeText={setDescription}
-                                        placeholder="Opisz swój przedmiot..."
-                                        multiline
-                                    />
-                                </View>
-
-                                <CustomSelect
-                                    options={categories}
-                                    value={selectedCategory}
-                                    onChange={setSelectedCategory}
-                                    placeholder="Wybierz kategorię"
-                                />
-
-                                {selectedCategory && (
-                                    <CustomSelect
-                                        options={subcategories}
-                                        value={selectedSubcategory}
-                                        onChange={setSelectedSubcategory}
-                                        placeholder="Wybierz subkategorię"
-                                    />
-                                )}
-
-                                <CustomSelect
-                                    options={brands}
-                                    value={selectedBrand}
-                                    onChange={setSelectedBrand}
-                                    placeholder="Wybierz markę"
-                                />
-
-                                <CustomSelect
-                                    options={conditionOptions}
-                                    value={selectedCondition}
-                                    onChange={setSelectedCondition}
-                                    placeholder="Wybierz stan przedmiotu"
-                                />
-
-                                <CustomSelect
-                                    options={advertisementTypeOptions}
-                                    value={selectedAdvertisementType}
-                                    onChange={setSelectedAdvertisementType}
-                                    placeholder="Wybierz rodzaj ogłoszenia"
-                                />
-
-                                {selectedAdvertisementType?.value === "sell" && (
-                                    <TextInput
-                                        style={styles.input}
-                                        value={price}
-                                        onChangeText={setPrice}
-                                        placeholder="Podaj cenę"
-                                        keyboardType="numeric"
-                                    />
-                                )}
-
-                                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                                    <Text style={styles.submitButtonText}>Dodaj ogłoszenie</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    />
+            {!user ? (
+                <View style={styles.loadingContainer}>
+                    <Text>Ładowanie...</Text>
                 </View>
-            </TouchableWithoutFeedback>
+            ) : (
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <View style={styles.innerContainer}>
+                        <Navbar />
+                        <FlatList
+                            data={[{ key: "form" }]}
+                            keyExtractor={(item) => item.key}
+                            renderItem={() => (
+                                <View style={styles.formContainer}>
+                                    <Text style={styles.header}>Dodaj ogłoszenie</Text>
+
+                                    <ImageUploader
+                                        images={images}
+                                        onImageUpload={setImages}
+                                        userId={user.id}
+                                    />
+
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.label}>Tytuł ogłoszenia:</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            value={title}
+                                            onChangeText={setTitle}
+                                            placeholder="np. Nowa bluzka do oddania"
+                                        />
+                                    </View>
+
+                                    <View style={styles.formGroup}>
+                                        <Text style={styles.label}>Opis ogłoszenia:</Text>
+                                        <TextInput
+                                            style={[styles.input, styles.textArea]}
+                                            value={description}
+                                            onChangeText={setDescription}
+                                            placeholder="Opisz swój przedmiot..."
+                                            multiline
+                                        />
+                                    </View>
+
+                                    <CustomSelect
+                                        options={categories}
+                                        value={selectedCategory}
+                                        onChange={setSelectedCategory}
+                                        placeholder="Wybierz kategorię"
+                                    />
+
+                                    {selectedCategory && (
+                                        <CustomSelect
+                                            options={subcategories}
+                                            value={selectedSubcategory}
+                                            onChange={setSelectedSubcategory}
+                                            placeholder="Wybierz subkategorię"
+                                        />
+                                    )}
+
+                                    <CustomSelect
+                                        options={brands}
+                                        value={selectedBrand}
+                                        onChange={setSelectedBrand}
+                                        placeholder="Wybierz markę"
+                                    />
+
+                                    <CustomSelect
+                                        options={conditionOptions}
+                                        value={selectedCondition}
+                                        onChange={setSelectedCondition}
+                                        placeholder="Wybierz stan przedmiotu"
+                                    />
+
+                                    <CustomSelect
+                                        options={advertisementTypeOptions}
+                                        value={selectedAdvertisementType}
+                                        onChange={setSelectedAdvertisementType}
+                                        placeholder="Wybierz rodzaj ogłoszenia"
+                                    />
+
+                                    {selectedAdvertisementType?.value === "sell" && (
+                                        <TextInput
+                                            style={styles.input}
+                                            value={price}
+                                            onChangeText={setPrice}
+                                            placeholder="Podaj cenę"
+                                            keyboardType="numeric"
+                                        />
+                                    )}
+
+                                    <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                                        <Text style={styles.submitButtonText}>Dodaj ogłoszenie</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        />
+                    </View>
+                </TouchableWithoutFeedback>
+            )}
         </KeyboardAvoidingView>
     );
 };
@@ -334,6 +326,11 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 18,
         fontWeight: "bold",
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
 

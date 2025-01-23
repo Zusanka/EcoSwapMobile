@@ -116,8 +116,13 @@ const Favorites = () => {
 
     const renderItem = ({ item }) => (
         <View style={styles.itemContainer}>
-            {item.images?.length > 0 ? (
-                <Image source={{ uri: item.images[0] }} style={styles.itemImage} />
+            {item.mainImage? (
+                <Image
+                    source={{
+                        uri: `data:image/jpeg;base64,${item.mainImage}`,
+                    }}
+                    style={styles.itemImage}
+                />
             ) : (
                 <View style={styles.noImageContainer}>
                     <Text style={styles.noImageText}>Brak zdjęcia</Text>

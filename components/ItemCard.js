@@ -10,8 +10,6 @@ const ItemCard = ({ item, onToggleFavorite }) => {
     };
 
     const handleToggleFavorite = () => {
-        // Wywołanie funkcji z rodzica,
-        // przekazujemy item i OBECNY stan (item.isFavorite)
         onToggleFavorite(item, item.isFavorite);
     };
 
@@ -20,7 +18,12 @@ const ItemCard = ({ item, onToggleFavorite }) => {
     return (
         <TouchableOpacity style={styles.card} onPress={handlePress}>
             {item.images?.length > 0 ? (
-                <Image source={{ uri: item.images[0] }} style={styles.image} />
+                <Image
+                    source={{
+                        uri: `data:image/jpeg;base64,${item.images[0].image}`, // Pobieramy właściwość `image`
+                    }}
+                    style={styles.image}
+                />
             ) : (
                 <View style={styles.noImageContainer}>
                     <Text style={styles.noImageText}>Brak zdjęcia</Text>
@@ -41,7 +44,7 @@ const ItemCard = ({ item, onToggleFavorite }) => {
                     onPress={handleToggleFavorite}
                     style={[
                         styles.favoriteButton,
-                        item.isFavorite ? styles.removeFavoriteButton : styles.addFavoriteButton
+                        item.isFavorite ? styles.removeFavoriteButton : styles.addFavoriteButton,
                     ]}
                 >
                     <Text style={styles.favoriteButtonText}>

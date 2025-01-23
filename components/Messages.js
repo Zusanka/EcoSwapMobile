@@ -12,22 +12,30 @@ import {
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getConversations, getMessages, sendMessage } from "../api/api"; // Import metod API
+import { getConversations, getMessages, sendMessage, fetchItemById } from "../api/api";
+import {useRoute} from "@react-navigation/native";
 
 const Messages = () => {
-    const [conversations, setConversations] = useState([]); // Lista konwersacji
-    const [selectedConversation, setSelectedConversation] = useState(null); // Wybrana konwersacja
-    const [messages, setMessages] = useState([]); // Wiadomości w wybranej konwersacji
+    const route = useRoute(); // Obsługa parametrów ze ścieżki
+    const [conversations, setConversations] = useState([]);
+    const [selectedConversation, setSelectedConversation] = useState(null);
+    const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [currentUserName, setCurrentUserName] = useState(null); // Nazwa zalogowanego użytkownika
+    const [loadingMessages, setLoadingMessages] = useState(false);
+    const [loadingImages, setLoadingImages] = useState(false);
+    const [currentUserName, setCurrentUserName] = useState(null);
+    const [images, setImages] = useState({}); // Przechowuje obrazy dla konwersacji
 
     // Funkcja do pobrania bieżącego użytkownika
     const loadCurrentUser = async () => {
-        const user = await AsyncStorage.getItem("user");
-        if (user) {
-            const parsedUser = JSON.parse(user);
-            setCurrentUserName(parsedUser.username);
+        try {
+            const user = await AsyncStorage.getItem("user");
+            if (user) {
+                const parsedUser = JSON.parse(user);
+                setCurrentUserName(parsedUser.username);
+            }
+        } catch (error) {
+            console.error("Błąd podczas ładowania bieżącego użytkownika:", error);
         }
     };
 
@@ -41,24 +49,54 @@ const Messages = () => {
         }
     };
 
+    // Funkcja do pobrania obrazów dla każdej konwersacji
+    const fetchImages = async () => {
+        try {
+            setLoadingImages(true);
+            const imagesMap = {};
+            for (const conversation of conversations) {
+                const fetchedItem = await fetchItemById(conversation.itemId);
+                imagesMap[conversation.itemId] = fetchedItem?.images?.[0] || null;
+            }
+            setImages(imagesMap);
+
+        } catch (error) {
+            console.error("Błąd podczas pobierania obrazów:", error);
+        } finally {
+            setLoadingImages(false);
+        }
+    };
+
     // Funkcja do pobrania wiadomości dla wybranej konwersacji
     const fetchMessages = async (conversationId) => {
         try {
-            setLoading(true);
+            setLoadingMessages(true);
             const response = await getMessages(conversationId);
             setMessages(response);
         } catch (error) {
             console.error(`Błąd podczas pobierania wiadomości dla rozmowy ${conversationId}:`, error);
         } finally {
-            setLoading(false);
+            setLoadingMessages(false);
         }
     };
 
-    // Obsługa kliknięcia w konwersację
+    // Obsługa kliknięcia w element listy
     const openChat = (conversation) => {
         setSelectedConversation(conversation);
-        fetchMessages(conversation.conversationId); // Pobierz wiadomości dla wybranej konwersacji
+        fetchMessages(conversation.conversationId);
     };
+
+    useEffect(() => {
+        const { conversationId } = route.params || {};
+        if (conversationId && conversations.length > 0) {
+            const conversation = conversations.find(
+                (conv) => conv.conversationId === conversationId
+            );
+            if (conversation) {
+                openChat(conversation);
+            }
+        }
+    }, [route.params, conversations]);
 
     // Obsługa wysyłania wiadomości
     const handleSendMessage = async () => {
@@ -67,28 +105,30 @@ const Messages = () => {
                 const newMessage = {
                     senderName: currentUserName,
                     content: message.trim(),
-                    sentAt: new Date().toISOString(), // Ustawiamy aktualną datę
+                    sentAt: new Date().toISOString(),
                 };
 
-                // Wysyłamy wiadomość za pomocą API
                 await sendMessage(selectedConversation.conversationId, message);
 
-                // Dodajemy wiadomość do widoku
                 setMessages((prevMessages) => [...prevMessages, newMessage]);
-                setMessage(""); // Czyścimy pole tekstowe
+                setMessage("");
             } catch (error) {
                 console.error("Błąd podczas wysyłania wiadomości:", error);
             }
         }
     };
 
-    // Pobierz dane przy montowaniu komponentu
     useEffect(() => {
         loadCurrentUser();
         fetchConversations();
     }, []);
 
-    // Funkcja do formatowania daty
+    useEffect(() => {
+        if (conversations.length > 0) {
+            fetchImages();
+        }
+    }, [conversations]);
+
     const formatDate = (isoDate) => {
         const date = new Date(isoDate);
         const day = String(date.getDate()).padStart(2, "0");
@@ -104,13 +144,28 @@ const Messages = () => {
             <View style={styles.userList}>
                 <FlatList
                     data={conversations}
-                    keyExtractor={(item) => item.itemId}
+                    keyExtractor={(item) => String(item.conversationId)}
                     renderItem={({ item }) => (
                         <TouchableOpacity
-                            style={styles.userItem}
+                            style={[
+                                styles.userItem,
+                                selectedConversation?.conversationId === item.conversationId &&
+                                styles.activeUserItem,
+                            ]}
                             onPress={() => openChat(item)}
                         >
-                            <Image source={{ uri: item.image }} style={styles.userImage} />
+                            {loadingImages ? (
+                                <ActivityIndicator size="small" color="#007bff" />
+                            ) : images[item.itemId] ? (
+                                <Image
+                                    source={{ uri: `data:image/jpeg;base64,${images[item.itemId].image}` }}
+                                    style={styles.userImage}
+                                />
+                            ) : (
+                                <View style={styles.placeholderImage}>
+                                    <Text>Ładowanie...</Text>
+                                </View>
+                            )}
                         </TouchableOpacity>
                     )}
                 />
@@ -119,16 +174,10 @@ const Messages = () => {
                 {selectedConversation ? (
                     <>
                         <View style={styles.chatHeader}>
-                            <View style={styles.chatHeaderInfo}>
-                                <Image
-                                    source={{ uri: selectedConversation.image }}
-                                    style={styles.chatHeaderImage}
-                                />
-                                <Text style={styles.chatHeaderName}>{selectedConversation.itemName}</Text>
-                            </View>
+                            <Text style={styles.chatHeaderName}>{selectedConversation.itemName}</Text>
                         </View>
                         <ScrollView style={styles.messages}>
-                            {loading ? (
+                            {loadingMessages ? (
                                 <ActivityIndicator size="large" color="#007bff" />
                             ) : (
                                 messages.map((msg, index) => (
@@ -181,7 +230,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#f8f8f8",
     },
     userList: {
-        width: "18%",
+        width: "20%",
         backgroundColor: "#fff",
         borderRightWidth: 1,
         borderRightColor: "#ccc",
@@ -197,29 +246,28 @@ const styles = StyleSheet.create({
         height: 50,
         borderRadius: 25,
     },
+    placeholderImage: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: "#ccc",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    activeUserItem: {
+        backgroundColor: "#f0f0f0",
+    },
     chatContainer: {
         flex: 1,
         padding: 10,
     },
     chatHeader: {
-        flexDirection: "row",
-        alignItems: "center",
         marginBottom: 10,
-    },
-    chatHeaderInfo: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    chatHeaderImage: {
-        width: 40,
-        height: 40,
-        borderRadius: 8,
-        marginRight: 10,
     },
     chatHeaderName: {
         fontSize: 18,
         fontWeight: "bold",
-        color:"black",
+        color: "black",
     },
     messages: {
         flex: 1,
@@ -259,7 +307,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 8,
         marginRight: 10,
-        marginBottom: 20,
     },
     sendButton: {
         width: 40,
@@ -268,7 +315,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#007bff",
         justifyContent: "center",
         alignItems: "center",
-        marginBottom: 20,
     },
     noChatSelected: {
         flex: 1,

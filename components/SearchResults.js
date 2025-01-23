@@ -108,7 +108,8 @@ const SearchResults = () => {
             onPress={() => navigation.navigate("Item", { itemId: item.itemId })}
         >
             {item.images?.length > 0 ? (
-                <Image source={{ uri: item.images[0] }} style={styles.resultImage} />
+                <Image source={{ uri: `data:image/jpeg;base64,${item.images[0].image}`}}
+                    style={styles.resultImage} />
             ) : (
                 <View style={styles.noImageContainer}>
                     <Text style={styles.noImageText}>Brak zdjęcia</Text>
