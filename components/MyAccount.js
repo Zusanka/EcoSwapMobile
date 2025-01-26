@@ -173,9 +173,9 @@ const styles = StyleSheet.create({
     profileImage: {
         width: 120,
         height: 120,
-        borderRadius: 60, // Dla okrągłego obrazu
-        resizeMode: "cover", // Dopasowanie obrazu do kontenera
-        backgroundColor: "#ccc", // Tło na wypadek braku obrazu
+        borderRadius: 60,
+        resizeMode: "cover",
+        backgroundColor: "#ccc",
     },
 
     placeholder: { alignItems: "center", justifyContent: "center", width: "100%", height: "100%" },

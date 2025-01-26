@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet, ActivityIndicator } from "react-native";
 import CustomSelect from "./CustomSelect";
-import { getCategoriesWithSubcategories } from "../api/api"; // Import funkcji z API
+import { getCategoriesWithSubcategories } from "../api/api";
 
 const FormFields = ({ title, setTitle, category, setCategory, subCategory, setSubCategory }) => {
     const [categories, setCategories] = useState([]);
@@ -12,8 +12,8 @@ const FormFields = ({ title, setTitle, category, setCategory, subCategory, setSu
         const fetchCategories = async () => {
             try {
                 const data = await getCategoriesWithSubcategories();
-                setCategories(Object.keys(data).map((key) => ({ value: key, label: key }))); // Konwersja na [{ value, label }]
-                setSubCategories(data); // Obiekt { "fashion": ["Shoes", "Clothes"], ... }
+                setCategories(Object.keys(data).map((key) => ({ value: key, label: key })));
+                setSubCategories(data);
             } catch (error) {
                 console.error("Błąd pobierania kategorii:", error);
             } finally {

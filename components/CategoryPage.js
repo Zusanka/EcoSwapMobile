@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import Navbar from "./Navbar";
 import ItemCard from "./ItemCard";
-import { getItemsByCategory } from "../api/api"; // Import pobierania ogłoszeń
+import { getItemsByCategory } from "../api/api";
 
 const CategoryPage = ({ route }) => {
     const { categoryName } = route.params;
@@ -61,7 +61,7 @@ const CategoryPage = ({ route }) => {
             <Navbar />
             <FlatList
                 data={items}
-                keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()} // 🔥 Poprawka kluczy
+                keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()}
                 renderItem={({ item }) => (
                     <ItemCard
                         item={item}
@@ -70,7 +70,7 @@ const CategoryPage = ({ route }) => {
                     />
                 )}
                 contentContainerStyle={styles.list}
-                nestedScrollEnabled={true} // 🔥 Poprawka VirtualizedList w ScrollView
+                nestedScrollEnabled={true}
             />
         </View>
     );

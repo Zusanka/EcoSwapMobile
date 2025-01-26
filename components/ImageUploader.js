@@ -28,20 +28,18 @@ const ImageUploader = ({ images, onImageUpload, onRemoveImage, userId }) => {
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             quality: 1,
             base64: true,
-            allowsMultipleSelection: true, // Obsługa wielu zdjęć
+            allowsMultipleSelection: true,
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
             try {
-                // Przekształcenie obrazów na tablicę Base64
                 const images = result.assets.map((asset) => {
                     if (!asset.base64) {
                         throw new Error("Błąd konwersji zdjęcia do Base64");
                     }
-                    return asset.base64; // Każdy obraz pozostaje jako Base64 string
+                    return asset.base64;
                 });
 
-                // Przekaż sformatowaną tablicę images do odpowiedniej metody
                 onImageUpload(images);
             } catch (err) {
                 Alert.alert("Błąd", err.message);
@@ -55,7 +53,7 @@ const ImageUploader = ({ images, onImageUpload, onRemoveImage, userId }) => {
             {item ? (
                 <View style={styles.imageWrapper}>
                     <Image
-                        source={{ uri: `data:image/jpeg;base64,${item}` }} // Dodanie prefiksu Base64
+                        source={{ uri: `data:image/jpeg;base64,${item}` }}
                         style={styles.image}
                     />
                     <TouchableOpacity

@@ -15,7 +15,7 @@ const ReviewCard = ({
                         description,
                         rating,
                         createdAt,
-                        onReviewChange, // Callback do aktualizacji danych
+                        onReviewChange,
                     }) => {
     const [profileImage, setProfileImage] = useState(null);
     const [currentUserId, setCurrentUserId] = useState(null);
@@ -52,7 +52,7 @@ const ReviewCard = ({
             await updateReview(reviewId, updatedData);
             setIsEditing(false);
             if (onReviewChange) {
-                onReviewChange(); // Wywołanie po edycji recenzji
+                onReviewChange();
             }
         } catch (error) {
             console.error('Error updating review:', error);
@@ -63,7 +63,7 @@ const ReviewCard = ({
         try {
             await deleteReview(reviewId);
             if (onReviewChange) {
-                onReviewChange(); // Wywołanie po usunięciu recenzji
+                onReviewChange();
             }
         } catch (error) {
             console.error('Error deleting review:', error);

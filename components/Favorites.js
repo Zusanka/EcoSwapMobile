@@ -1,4 +1,3 @@
-// Favorites.js
 import React, { useState, useEffect } from "react";
 import {
     View,
@@ -21,7 +20,6 @@ const Favorites = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    // Sprawdzenie użytkownika po montażu komponentu
     useEffect(() => {
         const checkUser = async () => {
             try {
@@ -37,7 +35,6 @@ const Favorites = () => {
         checkUser();
     }, []);
 
-    // Pobranie ulubionych przedmiotów po ustawieniu użytkownika
     useEffect(() => {
         if (user) {
             fetchUserFavorites();
@@ -71,7 +68,6 @@ const Favorites = () => {
         }
     };
 
-    // Funkcja do usuwania przedmiotu z ulubionych z potwierdzeniem
     const handleRemoveFavorite = (item) => {
         Alert.alert(
             "Usuń z Ulubionych",
@@ -86,12 +82,10 @@ const Favorites = () => {
                     onPress: async () => {
                         try {
                             await removeFromFavorites(item.itemId);
-                            // Aktualizacja listy ulubionych po usunięciu
                             setFavorites((prevFavorites) =>
                                 prevFavorites.filter((favItem) => favItem.itemId !== item.itemId)
                             );
                             console.log(`Usunięto przedmiot o ID=${item.itemId} z ulubionych.`);
-                            // Wyświetlenie potwierdzenia dla użytkownika
                             Alert.alert(
                                 "Sukces",
                                 `Usunięto "${item.name}" z ulubionych.`,

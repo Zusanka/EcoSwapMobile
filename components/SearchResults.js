@@ -13,22 +13,20 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 
-// Importujemy istniejące funkcje z api.js
 import { fetchItems, searchUsers,   getProfilePicture,
 } from "../api/api";
 
 const SearchResults = () => {
     const [searchQuery, setSearchQuery] = useState("");
-    const [allItems, setAllItems] = useState([]); // Wszystkie przedmioty
-    const [filteredItems, setFilteredItems] = useState([]); // Przedmioty po filtrowaniu
-    const [user, setUser] = useState(null); // Pojedynczy użytkownik
-    const [loading, setLoading] = useState(false); // Flaga ładowania
-    const [error, setError] = useState(""); // Komunikat o błędzie
+    const [allItems, setAllItems] = useState([]);
+    const [filteredItems, setFilteredItems] = useState([]);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
     const navigation = useNavigation();
     const [profileImage, setProfileImage] = useState(null);
 
 
-    // Pobranie wszystkich przedmiotów przy montażu komponentu
     useEffect(() => {
         const loadAllItems = async () => {
             try {
@@ -50,12 +48,10 @@ const SearchResults = () => {
         loadAllItems();
     }, []);
 
-    // Funkcja obsługująca wyszukiwanie po kliknięciu przycisku lupy
     const handleSearch = async () => {
         console.log("query: " + searchQuery);
 
         if (searchQuery.trim() === "") {
-            // Jeśli zapytanie jest puste, wyczyść wyniki
             setFilteredItems([]);
             setUser(null);
             setError("");
@@ -63,9 +59,8 @@ const SearchResults = () => {
         }
 
         setLoading(true);
-        setError(""); // Resetowanie komunikatu o błędzie
+        setError("");
         try {
-            // Filtrowanie przedmiotów po stronie klienta
             if (Array.isArray(allItems)) {
                 const filtered = allItems.filter((item) =>
                     item.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -76,7 +71,6 @@ const SearchResults = () => {
                 setFilteredItems([]);
             }
 
-            // Wyszukiwanie użytkownika po stronie serwera
             const usersData = await searchUsers(searchQuery);
 
             if (usersData.username) {
@@ -86,7 +80,7 @@ const SearchResults = () => {
                     setProfileImage(`data:image/jpeg;base64,${profilePicBase64}`);
                 }
             } else {
-                setUser(null); // Brak użytkownika znalezionego
+                setUser(null);
             }
         } catch (error) {
             console.error("Błąd podczas wyszukiwania:", error);
@@ -96,12 +90,10 @@ const SearchResults = () => {
         }
     };
 
-    // Funkcja obsługująca zmianę tekstu w polu wyszukiwania
     const handleSearchInputChange = (text) => {
         setSearchQuery(text);
     };
 
-    // Renderowanie pojedynczego przedmiotu
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.resultCard}
@@ -125,7 +117,6 @@ const SearchResults = () => {
         </TouchableOpacity>
     );
 
-    // Renderowanie pojedynczego użytkownika
     const renderUser = () => {
         if (!user) return null;
 
@@ -358,7 +349,7 @@ const styles = StyleSheet.create({
     profileImage: {
         width: "100%",
         height: "100%",
-        borderRadius: 60, // Dla okrągłego obrazu
+        borderRadius: 60,
         resizeMode: "cover",
     },
     placeholder: {

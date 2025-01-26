@@ -10,22 +10,21 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { login } from "../api/api"; // Import funkcji `login` z pliku `api.js`
+import { login } from "../api/api";
 
 const Login = () => {
-  const [loginInput, setLoginInput] = useState(""); // Pole loginu
-  const [password, setPassword] = useState(""); // Pole hasła
-  const [showPassword, setShowPassword] = useState(false); // Czy hasło ma być widoczne
+  const [loginInput, setLoginInput] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
 
   const handleLogin = async () => {
     try {
-      // Wywołanie funkcji `login` z `api.js`
       const data = await login({ username: loginInput, password });
       console.log("Zalogowano pomyślnie:", data.token);
 
       Alert.alert("Sukces", "Zalogowano pomyślnie!");
-      navigation.navigate("Home"); // Nawigacja do ekranu Home
+      navigation.navigate("Home");
     } catch (error) {
       console.error("Błąd logowania:", error.message);
       Alert.alert(

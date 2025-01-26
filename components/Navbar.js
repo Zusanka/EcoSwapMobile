@@ -15,10 +15,8 @@ const Navbar = () => {
 
     const handleLogout = async () => {
         try {
-            // Usuwamy oba klucze: "token" i "user"
             await AsyncStorage.removeItem("token");
             await AsyncStorage.removeItem("user");
-            // Przechodzimy na Home
             navigation.replace("Home");
         } catch (error) {
             console.log("Error during logout:", error);

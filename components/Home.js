@@ -1,4 +1,3 @@
-// Home.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -25,7 +24,6 @@ const Home = () => {
   const [lastItems, setLastItems] = useState([]);
   const navigation = useNavigation();
 
-  // 1. Sprawdź użytkownika po montażu komponentu
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -41,7 +39,6 @@ const Home = () => {
     checkUser();
   }, []);
 
-  // 2. Pobierz przedmioty po ustawieniu użytkownika
   useEffect(() => {
     fetchLastItems();
   }, [user]);
@@ -52,27 +49,23 @@ const Home = () => {
       const items = response?.content || response || [];
 
       if (user) {
-        // Gdy zalogowany, sprawdź, czy item jest w ulubionych
         const itemsWithFavoriteStatus = await Promise.all(
             items.map(async (item) => {
               const favoriteStatus = await checkIfFavorite(item.itemId);
               console.log(`Status ulubionych dla ${item.itemId}: ${favoriteStatus}`);
               return {
                 ...item,
-                isFavorite: favoriteStatus, // bezpośrednio przypisujemy wartość boolean
+                isFavorite: favoriteStatus,
               };
             })
         );
         setLastItems(itemsWithFavoriteStatus);
-        // console.log("Updated lastItems:", itemsWithFavoriteStatus);
       } else {
-        // Gdy niezalogowany, isFavorite = false
         const itemsWithoutFavoriteStatus = items.map((item) => ({
           ...item,
           isFavorite: false,
         }));
         setLastItems(itemsWithoutFavoriteStatus);
-        // console.log("Updated lastItems (no favorites):", itemsWithoutFavoriteStatus);
       }
     } catch (error) {
       console.error("Błąd pobierania ostatnich przedmiotów:", error);
@@ -80,28 +73,23 @@ const Home = () => {
     }
   };
 
-  // Funkcja wywoływana z ItemCard
   const onToggleFavorite = async (favoriteItem, isCurrentlyFavorite) => {
     try {
       console.log(`onToggleFavorite -> itemId=${favoriteItem.itemId}, isCurrentlyFavorite=${isCurrentlyFavorite}`);
 
       if (isCurrentlyFavorite) {
-        // STARY stan to true -> usuwamy z ulubionych
         await removeFromFavorites(favoriteItem.itemId);
       } else {
-        // STARY stan to false -> dodajemy do ulubionych
         await addToFavorites(favoriteItem.itemId);
       }
 
-      // Po wykonaniu operacji zapytaj backend, czy finalnie jest w ulubionych
       const updatedStatus = await checkIfFavorite(favoriteItem.itemId);
       console.log(`Po aktualizacji, status ulubionych dla ${favoriteItem.itemId}: ${updatedStatus}`);
 
-      // Zaktualizuj stan listy
       setLastItems((prevItems) =>
           prevItems.map((item) =>
               item.itemId === favoriteItem.itemId
-                  ? { ...item, isFavorite: updatedStatus } // bezpośrednio przypisujemy wartość boolean
+                  ? { ...item, isFavorite: updatedStatus }
                   : item
           )
       );
@@ -110,7 +98,6 @@ const Home = () => {
     }
   };
 
-  // Odśwież dane za każdym razem, gdy wracamy na ekran Home
   useFocusEffect(
       React.useCallback(() => {
         fetchLastItems();
@@ -185,7 +172,7 @@ const Home = () => {
                 lastItems.length > 0 ? (
                     <FlatList
                         data={lastItems}
-                        extraData={lastItems} // Wymusza odświeżenie FlatList przy każdej zmianie lastItems
+                        extraData={lastItems}
                         keyExtractor={(item) => item.itemId.toString()}
                         horizontal
                         showsHorizontalScrollIndicator={false}
@@ -216,7 +203,6 @@ const Home = () => {
   );
 };
 
-// ===== STYLES =====
 const styles = StyleSheet.create({
   container: {
     flex: 1,

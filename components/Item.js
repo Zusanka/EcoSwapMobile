@@ -60,7 +60,7 @@ const Item = ({ route }) => {
                 setFormData({
                     ...itemData,
                     isFavorite: isFavorite,
-                    isOwner: itemData.user.userId === user.id, // Sprawdzenie, czy użytkownik jest właścicielem
+                    isOwner: itemData.user.userId === user.id,
                 });
             } else {
                 setFormData({
@@ -79,12 +79,11 @@ const Item = ({ route }) => {
 
     const isValidBase64 = (str) => {
         if (typeof str !== "string") return false;
-        const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/; // RegEx dla Base64
+        const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
         return base64Regex.test(str);
     };
 
     const toggleFavorite = async () => {
-
         try {
             if (formData.isFavorite) {
                 await removeFromFavorites(itemId);
@@ -103,14 +102,14 @@ const Item = ({ route }) => {
 
     const handleSendMessage = async () => {
         if (message.trim() === "") {
-            return; // Nie wysyłamy pustych wiadomości
+            return;
         }
 
         try {
             const conversationData = {
                 senderName: user.name,
                 content: message.trim(),
-                sentAt: new Date().toISOString(), // Ustawiamy aktualną datę
+                sentAt: new Date().toISOString(),
             };
 
             const newConversation = await startConversation(formData.itemId, message);
@@ -153,6 +152,22 @@ const Item = ({ route }) => {
         alert("Funkcja zakończenia ogłoszenia nie została jeszcze zaimplementowana.");
     };
 
+    const handleBuyItem = () => {
+        Alert.alert(
+            "Kupno",
+            "Czy na pewno chcesz kupić ten przedmiot?",
+            [
+                { text: "Anuluj", style: "cancel" },
+                {
+                    text: "Kup",
+                    onPress: () => {
+                        navigation.navigate("Purchase", { item: formData });
+                    },
+                },
+            ]
+        );
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -180,13 +195,13 @@ const Item = ({ route }) => {
                             style={styles.imageCarousel}
                         >
                             {formData.images.map((item, index) => (
-                            <View key={index} style={styles.carouselImageContainer}>
-                                <Image
-                                    source={{ uri: `data:image/jpeg;base64,${item.image}` }}
-                                    style={styles.carouselImage}
-                                />
-                            </View>
-                        ))}
+                                <View key={index} style={styles.carouselImageContainer}>
+                                    <Image
+                                        source={{ uri: `data:image/jpeg;base64,${item.image}` }}
+                                        style={styles.carouselImage}
+                                    />
+                                </View>
+                            ))}
                         </ScrollView>
                     ) : (
                         <View style={styles.noImageContainer}>
@@ -194,7 +209,6 @@ const Item = ({ route }) => {
                         </View>
                     )}
                 </View>
-
 
                 <View style={styles.detailsSection}>
                     <Text style={styles.title}>{formData.name}</Text>
@@ -215,7 +229,8 @@ const Item = ({ route }) => {
                                 : "Dodaj do ulubionych"}
                         </Text>
                     </TouchableOpacity>
-                    {formData.isOwner && (
+
+                    {formData.isOwner ? (
                         <View style={styles.ownerActions}>
                             <TouchableOpacity
                                 style={[styles.actionButton, styles.deleteButton]}
@@ -228,6 +243,15 @@ const Item = ({ route }) => {
                                 onPress={handleFinishItem}
                             >
                                 <Text style={styles.actionButtonText}>Edytuj ogłoszenie</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View style={styles.ownerActions}>
+                            <TouchableOpacity
+                                style={[styles.actionButton, styles.buyButton]}
+                                onPress={handleBuyItem}
+                            >
+                                <Text style={styles.actionButtonText}>Kup</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -273,6 +297,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         borderRadius: 20,
         alignItems: "center",
+        marginTop: 10,
     },
     addFavoriteButton: {
         backgroundColor: "#28a745",
@@ -314,47 +339,46 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     ownerActions: {
-        flexDirection: "row", // Ustawiamy elementy w rzędzie
-        justifyContent: "space-between", // Równomierne rozmieszczenie przycisków
-        marginHorizontal: 20, // Dodajemy odstęp po bokach
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginHorizontal: 20,
         marginTop: 20,
     },
     actionButton: {
-        flex: 1, // Przyciski będą równo dzielić przestrzeń
-        padding: 5,
+        flex: 1,
+        padding: 10,
         borderRadius: 20,
         alignItems: "center",
+        marginHorizontal: 5,
     },
     deleteButton: {
-        justifyContent: "center", // Wyśrodkowanie w poziomie
-        alignItems: "center", // Wyśrodkowanie w pionie
-        backgroundColor: "red", // Czerwony przycisk dla "Usuń ogłoszenie"
-        marginRight: 10, // Odstęp między przyciskami
+        backgroundColor: "red",
     },
     finishButton: {
-        backgroundColor: "blue", // Zielony przycisk dla "Zakończ ogłoszenie"
-        marginLeft: 10, // Odstęp między przyciskami
+        backgroundColor: "blue",
+    },
+    buyButton: {
+        backgroundColor: "#ffc107",
     },
     actionButtonText: {
         color: "#fff",
         fontSize: 16,
     },
     imageCarousel: {
-        height: 300, // Wysokość widoku dla zdjęć
+        height: 300,
         marginBottom: 10,
     },
     carouselImageContainer: {
-        width: 300, // Szerokość każdego obrazu
-        marginRight: 10, // Odstęp między zdjęciami
-        borderRadius: 10, // Zaokrąglone rogi dla estetyki
+        width: 300,
+        marginRight: 10,
+        borderRadius: 10,
         overflow: "hidden",
     },
     carouselImage: {
         width: "100%",
         height: "100%",
-        resizeMode: "cover", // Obraz dostosowuje się do pojemnika
+        resizeMode: "cover",
     },
-
 });
 
 export default Item;

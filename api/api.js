@@ -3,11 +3,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Buffer } from 'buffer';
 global.Buffer = Buffer;
 
-
-// Adres Twojego backendu
 const API_URL = "http://192.168.1.111:8080";
 
-// Tworzymy instancję axios z domyślnym URL i nagłówkami
 const api = axios.create({
     baseURL: API_URL,
     headers: {
@@ -15,14 +12,12 @@ const api = axios.create({
     },
 });
 
-// Interceptor requestu – dorzucamy token, jeśli istnieje w AsyncStorage
 api.interceptors.request.use(
     async (config) => {
         try {
             const token = await AsyncStorage.getItem("token");
             console.log("Token z AsyncStorage:", token);
             if (token) {
-                // W tokenie mamy już "Bearer <JWT>", więc wstawiamy go bez modyfikacji
                 config.headers.Authorization = token;
             }
         } catch (error) {
@@ -33,7 +28,6 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Interceptor odpowiedzi – jeśli serwer zwróci błąd 401, usuwamy token
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -45,13 +39,10 @@ api.interceptors.response.use(
     }
 );
 
-/* ========== AUTH ========== */
-
 export const login = async (credentials) => {
     try {
         const response = await api.post("/api/auth/login", credentials);
 
-        // Tworzymy poprawny "Authorization" do zapisu w AsyncStorage.
         if (response.data && response.data.token) {
             const fullBearerToken = `${response.data.type} ${response.data.token}`;
             await AsyncStorage.setItem("token", fullBearerToken);
@@ -77,8 +68,6 @@ export const register = async (userData) => {
     }
 };
 
-/* ========== UŻYTKOWNIK ========== */
-
 export const getUserData = async (userId) => {
     try {
         const response = await api.get(`/api/users/${userId}`);
@@ -92,14 +81,12 @@ export const getUserData = async (userId) => {
 export const getUserItems = async (userId) => {
     try {
         const response = await api.get(`/api/items/user/${userId}/items`);
-        return response.data; // Zakładam, że API zwraca tablicę ogłoszeń użytkownika
+        return response.data;
     } catch (error) {
         console.error("Błąd podczas pobierania ogłoszeń użytkownika:", error.response?.data || error.message);
         throw error;
     }
 };
-
-/* ========== OPINIE ========== */
 
 // Pobieranie opinii użytkownika
 export const getUserReviews = async (userId) => {
@@ -108,15 +95,15 @@ export const getUserReviews = async (userId) => {
         console.log('getUserReviews response:', response.data); // Debugging
         // Sprawdź strukturę odpowiedzi
         if (response.data.reviews && Array.isArray(response.data.reviews)) {
-            return response.data.reviews; // Jeśli odpowiedź ma pole 'reviews'
+            return response.data.reviews;
         }
         if (Array.isArray(response.data)) {
-            return response.data; // Jeśli odpowiedź jest bezpośrednią tablicą
+            return response.data;
         }
-        return []; // W przeciwnym razie, zwróć pustą tablicę
+        return [];
     } catch (error) {
         console.error("Błąd podczas pobierania opinii użytkownika:", error.response?.data || error.message);
-        return []; // Zwracamy pustą tablicę w razie błędu
+        return [];
     }
 };
 
@@ -124,21 +111,19 @@ export const getUserReviews = async (userId) => {
 export const getUserAverageRating = async (userId) => {
     try {
         const response = await api.get(`/api/reviews/user/${userId}/average-rating`);
-        console.log('getUserAverageRating response:', response.data); // Debugging
-        // Sprawdź strukturę odpowiedzi
+        console.log('getUserAverageRating response:', response.data);
         if (typeof response.data.averageRating === 'number') {
             return response.data.averageRating;
         }
         if (typeof response.data === 'number') {
-            return response.data; // Jeśli odpowiedź jest bezpośrednią wartością
+            return response.data;
         }
-        return 0; // W przeciwnym razie, zwróć 0
+        return 0;
     } catch (error) {
         console.error("Błąd podczas pobierania średniej oceny użytkownika:", error.response?.data || error.message);
-        return 0; // Zwracamy 0 w razie błędu
+        return 0;
     }
 };
-// ------------------- OPINIE
 export const addReview = async (reviewData) => {
     try {
         const response = await api.post(`/api/reviews`, reviewData);
@@ -209,27 +194,18 @@ export const updateProfilePicture = async (userId, base64Image) => {
 export const getProfilePicture = async (userId) => {
     try {
         const response = await api.get(`/api/users/${userId}/profile-picture`, {
-            responseType: "json", // Oczekuj JSON-a
+            responseType: "json",
         });
 
-        // Zakładam, że backend zwraca JSON o strukturze { image: "Base64" }
         const base64Image = response.data.image;
 
-        // if (!base64Image) {
-        //     throw new Error("Brak obrazu w odpowiedzi.");
-        // }
-
-        return base64Image; // Zwróć dane obrazu w Base64
+        return base64Image;
     } catch (error) {
         console.error("Błąd pobierania zdjęcia profilowego:", error.response?.data || error.message);
         throw error;
 
     }
 };
-
-
-
-/* ========== OGŁOSZENIA ========== */
 
 export const addNewItem = async (itemData) => {
     try {
@@ -240,13 +216,11 @@ export const addNewItem = async (itemData) => {
             throw new Error("Token nie został znaleziony.");
         }
 
-        // Dodanie nagłówka Authorization
         const config = {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         };
-        // Wysłanie żądania z tokenem
         const response = await api.post("/api/items", itemData, config);
 
         console.log("Ogłoszenie dodane:", response.data.name);
@@ -266,14 +240,12 @@ export const deleteItem = async (itemId) => {
             throw new Error("Token nie został znaleziony. Użytkownik nie jest zalogowany.");
         }
 
-        // Konfiguracja nagłówków z tokenem
         const config = {
             headers: {
                 Authorization: token, // Token zawiera już "Bearer <JWT>"
             },
         };
 
-        // Wysłanie żądania DELETE do endpointu
         const response = await api.delete(`/api/items/${itemId}`, config);
 
         console.log("Ogłoszenie zostało usunięte:", itemId);
@@ -336,7 +308,7 @@ export const checkIfFavorite = async (itemId) => {
 };
 
 
-// Funkcja pobierająca szczegóły przedmiotu po ID (z like i dislike)
+// like i dislike
 export const fetchItemById = async (itemId) => {
     try {
         const response = await api.get(`/api/items/${itemId}`);
@@ -346,9 +318,6 @@ export const fetchItemById = async (itemId) => {
         throw error;
     }
 };
-
-
-/* ========== INNE ========== */
 
 // Pobranie listy kategorii
 export const getCategories = async () => {
@@ -382,9 +351,7 @@ export const getBrands = async () => {
         throw error;
     }
 };
-/* ========== WYSZUKIWANIE ========== */
-
-// Dodajemy funkcję do wyszukiwania użytkowników
+//Funkcja do wyszukiwania użytkowników
 export const searchUsers = async (username) => {
     try {
         const response = await api.get(`/api/users/username/${encodeURIComponent(username)}`);
@@ -393,8 +360,6 @@ export const searchUsers = async (username) => {
         return null;
     }
 };
-/* ========== ROZMOWY ========== */
-
 // Pobieranie wiadomości z danej rozmowy
 export const getMessages = async (conversationId) => {
     try {
@@ -409,12 +374,9 @@ export const getMessages = async (conversationId) => {
 // Wysyłanie nowej wiadomości w rozmowie
 export const sendMessage = async (conversationId, messageData) => {
     try {
-        // Usuń nadmiarowe cudzysłowy, jeśli istnieją
         if (messageData.startsWith('"') && messageData.endsWith('"')) {
             messageData = JSON.parse(messageData);
         }
-
-        // Wyślij dane jako surowy string
         const response = await api.post(`/api/conversations/${conversationId}/messages`, messageData, {
             headers: {
                 'Content-Type': 'text/plain',
@@ -431,12 +393,9 @@ export const sendMessage = async (conversationId, messageData) => {
 // Rozpoczęcie nowej rozmowy na podstawie ID przedmiotu
 export const startConversation = async (itemId, conversationData) => {
     try {
-        // Usuń nadmiarowe cudzysłowy, jeśli istnieją
         if (conversationData.startsWith('"') && conversationData.endsWith('"')) {
             conversationData = JSON.parse(conversationData);
         }
-
-        // Wyślij dane jako surowy string
         const response = await api.post(`/api/conversations/start/${itemId}`, conversationData, {
             headers: {
                 'Content-Type': 'text/plain',

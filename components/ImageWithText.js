@@ -5,7 +5,7 @@ const ImageWithText = () => {
   return (
       <View style={styles.container}>
         <Image
-            source={require("./recipe5.jpeg")} // Upewnij się, że ścieżka do obrazu jest poprawna
+            source={require("./recipe5.jpeg")}
             style={styles.image}
         />
         <View style={styles.textContainer}>
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#28a745",
     textAlign: "center",
-    fontFamily: "DancingScript-Regular", // Dodaj niestandardową czcionkę, jeśli została zaimportowana
+    fontFamily: "DancingScript-Regular",
   },
 });
 

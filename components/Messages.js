@@ -16,7 +16,7 @@ import { getConversations, getMessages, sendMessage, fetchItemById } from "../ap
 import {useRoute} from "@react-navigation/native";
 
 const Messages = () => {
-    const route = useRoute(); // Obsługa parametrów ze ścieżki
+    const route = useRoute();
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -24,9 +24,7 @@ const Messages = () => {
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [loadingImages, setLoadingImages] = useState(false);
     const [currentUserName, setCurrentUserName] = useState(null);
-    const [images, setImages] = useState({}); // Przechowuje obrazy dla konwersacji
-
-    // Funkcja do pobrania bieżącego użytkownika
+    const [images, setImages] = useState({});
     const loadCurrentUser = async () => {
         try {
             const user = await AsyncStorage.getItem("user");
@@ -39,7 +37,6 @@ const Messages = () => {
         }
     };
 
-    // Funkcja do pobrania konwersacji
     const fetchConversations = async () => {
         try {
             const response = await getConversations();
@@ -49,7 +46,6 @@ const Messages = () => {
         }
     };
 
-    // Funkcja do pobrania obrazów dla każdej konwersacji
     const fetchImages = async () => {
         try {
             setLoadingImages(true);
@@ -67,7 +63,6 @@ const Messages = () => {
         }
     };
 
-    // Funkcja do pobrania wiadomości dla wybranej konwersacji
     const fetchMessages = async (conversationId) => {
         try {
             setLoadingMessages(true);
@@ -80,7 +75,6 @@ const Messages = () => {
         }
     };
 
-    // Obsługa kliknięcia w element listy
     const openChat = (conversation) => {
         setSelectedConversation(conversation);
         fetchMessages(conversation.conversationId);
@@ -98,7 +92,6 @@ const Messages = () => {
         }
     }, [route.params, conversations]);
 
-    // Obsługa wysyłania wiadomości
     const handleSendMessage = async () => {
         if (message.trim() && selectedConversation) {
             try {

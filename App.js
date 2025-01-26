@@ -14,6 +14,7 @@ import Home from './components/Home';
 import CategoryPage from './components/CategoryPage';
 import SearchResults from "./components/SearchResults";
 import Favorites from "./components/Favorites";
+import PurchaseScreen from "./components/PurchaseScreen";
 
 const Stack = createStackNavigator();
 
@@ -35,6 +36,7 @@ export default function App() {
           <Stack.Screen name="User" component={User} options={{ title: "Użytkownik" }}/>
           <Stack.Screen name="MyAccount" component={MyAccount} options={{ title: "Mój Profil" }}/>
           <Stack.Screen name="Favorites" component={Favorites} options={{title: "Ulubione ogłoszenia" }}/>
+          <Stack.Screen name="Purchase" component={PurchaseScreen} options={{title: "Zakup" }}/>
 
           <Stack.Screen name="Messages" component={Messages}options={{ title: "Wiadomości" }} />
           <Stack.Screen name="Home" component={Home}options={{ title: "Strona główna" }} />

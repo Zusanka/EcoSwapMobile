@@ -16,7 +16,7 @@ const BrandSelect = ({ options, value, onChange, placeholder }) => {
     const handleToggle = () => {
         setIsOpen(!isOpen);
         if (!isOpen) {
-            setFilteredOptions(options.slice(0, 5)); // Ustawienie początkowych opcji
+            setFilteredOptions(options.slice(0, 5));
         }
     };
 
@@ -29,12 +29,11 @@ const BrandSelect = ({ options, value, onChange, placeholder }) => {
     const handleInputChange = (value) => {
         setInputValue(value);
 
-        // Filtracja opcji
         const filtered = options.filter((option) =>
             option.label.toLowerCase().includes(value.toLowerCase())
         );
 
-        setFilteredOptions(filtered.slice(0, 5)); // Ograniczenie do 5 elementów
+        setFilteredOptions(filtered.slice(0, 5));
     };
 
     return (

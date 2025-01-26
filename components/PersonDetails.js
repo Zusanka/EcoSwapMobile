@@ -7,8 +7,8 @@ import SummaryDetail from './SummaryDetail';
 import Navbar from './Navbar';
 
 const PersonDetails = ({ route }) => {
-    const { formData } = route.params || {}; // Receive formData with price
-    const [price, setPrice] = useState(formData?.price || 0); // Ensure price is a number
+    const { formData } = route.params || {};
+    const [price, setPrice] = useState(formData?.price || 0);
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [isShippingCollapsed, setIsShippingCollapsed] = useState(true);
     const [isPaymentCollapsed, setIsPaymentCollapsed] = useState(true);

@@ -20,7 +20,7 @@ const ItemCard = ({ item, onToggleFavorite }) => {
             {item.images?.length > 0 ? (
                 <Image
                     source={{
-                        uri: `data:image/jpeg;base64,${item.images[0].image}`, // Pobieramy właściwość `image`
+                        uri: `data:image/jpeg;base64,${item.images[0].image}`,
                     }}
                     style={styles.image}
                 />
@@ -121,10 +121,10 @@ const styles = StyleSheet.create({
         borderRadius: 15,
     },
     addFavoriteButton: {
-        backgroundColor: "#28a745", // Zielone tło
+        backgroundColor: "#28a745",
     },
     removeFavoriteButton: {
-        backgroundColor: "red", // Czerwone tło
+        backgroundColor: "red",
     },
     favoriteButtonText: {
         color: "#fff",

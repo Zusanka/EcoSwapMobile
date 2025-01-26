@@ -8,14 +8,11 @@ const SummaryDetail = ({ shippingMethod, price }) => {
         inpost: 8.99,
     };
 
-    // Retrieve shipping cost based on the selected method
     const shippingCost = shippingMethod ? shippingCosts[shippingMethod] : 0;
 
-    // Ensure price and shippingCost are numbers
-    const totalPrice = parseFloat(price) || 0; // Convert price to a number
-    const totalShippingCost = parseFloat(shippingCost) || 0; // Convert shippingCost to a number
+    const totalPrice = parseFloat(price) || 0;
+    const totalShippingCost = parseFloat(shippingCost) || 0;
 
-    // Calculate total cost
     const totalCost = totalPrice + totalShippingCost;
 
     return (

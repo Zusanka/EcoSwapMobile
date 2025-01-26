@@ -4,15 +4,13 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 const ShippingMethod = ({
                             shippingMethod,
                             setShippingMethod,
-                            hovered,
-                            setHovered,
                             isShippingCollapsed,
                             toggleShippingCollapse,
                         }) => {
     const shippingMethods = [
-        { value: 'personalPickup', label: 'Odbiór osobisty', time: '0 dni', cost: '0 zł', imgSrc: 'recipe5.jpeg' },
-        { value: 'delivery', label: 'Wysyłka kurierem', time: '2 dni', cost: '15 zł', imgSrc: 'recipe5.jpeg' },
-        { value: 'inpost', label: 'Paczkomat Inpost', time: '2 dni', cost: '8.99 zł', imgSrc: 'recipe5.jpeg' },
+        { value: 'personalPickup', label: 'Odbiór osobisty', time: '0 dni', cost: '0 zł', imgSrc: 'https://via.placeholder.com/40' },
+        { value: 'delivery', label: 'Wysyłka kurierem', time: '2 dni', cost: '15 zł', imgSrc: 'https://via.placeholder.com/40' },
+        { value: 'inpost', label: 'Paczkomat Inpost', time: '2 dni', cost: '8.99 zł', imgSrc: 'https://via.placeholder.com/40' },
     ];
 
     const selectedMethod = shippingMethods.find((method) => method.value === shippingMethod);
@@ -38,11 +36,9 @@ const ShippingMethod = ({
                             key={method.value}
                             style={[
                                 styles.option,
-                                hovered === method.value && styles.hoveredOption,
+                                shippingMethod === method.value && styles.selectedOption,
                             ]}
                             onPress={() => setShippingMethod(method.value)}
-                            onMouseEnter={() => setHovered(method.value)}
-                            onMouseLeave={() => setHovered(null)}
                         >
                             <Image source={{ uri: method.imgSrc }} style={styles.image} />
                             <View style={styles.optionTextContainer}>
@@ -68,13 +64,11 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 2,
         marginTop: 16,
-        overflow: 'hidden',
+        padding: 16,
     },
     collapsed: {
-        height: 100,
     },
     expanded: {
-        height: 'auto',
     },
     collapseButton: {
         position: 'absolute',
@@ -95,17 +89,15 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 16,
         fontWeight: 'bold',
-        margin: 16,
+        marginBottom: 16,
     },
     detailText: {
         fontSize: 14,
         color: '#555',
-        marginLeft: 16,
         marginBottom: 8,
     },
     optionsContainer: {
         marginTop: 8,
-        marginHorizontal: 16,
     },
     option: {
         flexDirection: 'row',
@@ -117,8 +109,9 @@ const styles = StyleSheet.create({
         borderColor: '#ddd',
         backgroundColor: '#f9f9f9',
     },
-    hoveredOption: {
+    selectedOption: {
         backgroundColor: '#e6f7ff',
+        borderColor: '#007bff',
     },
     image: {
         width: 40,

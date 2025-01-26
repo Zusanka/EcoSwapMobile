@@ -18,7 +18,6 @@ import ReviewCard from './ReviewCard';
 import { renderStars } from './StarRating';
 import StarRatingInput from './StarRatingInput';
 
-// Importujemy funkcje z api.js
 import {
   getUserData,
   getUserItems,
@@ -37,18 +36,17 @@ const User = () => {
   const route = useRoute();
   const { userId } = route.params || {};
   const [profileImage, setProfileImage] = useState(null);
-  const [user, setUser] = useState(null); // Dane użytkownika
-  const [items, setItems] = useState([]); // Ogłoszenia użytkownika
-  const [reviews, setReviews] = useState([]); // Opinie użytkownika
-  const [averageRating, setAverageRating] = useState(0); // Średnia ocena użytkownika
-  const [likedItems, setLikedItems] = useState({}); // Stan polubień dla ogłoszeń
+  const [user, setUser] = useState(null);
+  const [items, setItems] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [likedItems, setLikedItems] = useState({});
   const [showReviews, setShowReviews] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 0, description: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Funkcja do odświeżania danych recenzji
   const refreshReviews = async () => {
     try {
       const userReviews = (await getUserReviews(userId)) || [];
@@ -71,11 +69,9 @@ const User = () => {
       try {
         setLoading(true);
 
-        // Pobranie danych użytkownika
         const userData = await getUserData(userId);
         setUser(userData);
 
-        // Pobranie ogłoszeń, opinii i średniej oceny
         const userItems = await getUserItems(userId);
         setItems(userItems);
 
@@ -90,7 +86,6 @@ const User = () => {
           setProfileImage(`data:image/jpeg;base64,${profilePicBase64}`);
         }
 
-        // Sprawdzenie polubień
         const favoriteStatuses = await Promise.all(
             userItems.map(async (item) => {
               const status = await checkIfFavorite(item.itemId);
@@ -151,7 +146,6 @@ const User = () => {
       setLoading(true);
       await addReview(reviewData);
 
-      // Odśwież dane recenzji
       await refreshReviews();
 
       setNewReview({ rating: 0, description: '' });

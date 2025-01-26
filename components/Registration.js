@@ -24,7 +24,6 @@ const Registration = () => {
   const navigation = useNavigation();
 
   const handleRegister = async () => {
-    // Walidacja danych przed wysłaniem
     if (!login || !email || !password || !firstName || !lastName || !phoneNumber) {
       Alert.alert("Błąd", "Proszę wypełnić wszystkie pola.");
       return;
@@ -41,7 +40,6 @@ const Registration = () => {
         phoneNumber: phoneNumber,
       });
 
-      // Wywołanie funkcji register z API
       const data = await register({
         username: login,
         email: email,
@@ -60,10 +58,8 @@ const Registration = () => {
         },
       ]);
     } catch (error) {
-      // Obsługa błędów
       console.error("Błąd rejestracji:", error.response?.data || error.message);
 
-      // Sprawdzenie, czy serwer zwrócił szczegółowy komunikat błędu
       const errorMessage =
           error.response?.data?.message ||
           "Nieprawidłowe dane lub problem z serwerem.";
@@ -194,7 +190,6 @@ const Registration = () => {
   );
 };
 
-// ===== STYLES =====
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,

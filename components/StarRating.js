@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faStar, faStarHalfAlt } from '@fortawesome/free-solid-svg-icons';
-import { faStar as faRegStar } from '@fortawesome/free-regular-svg-icons'; // Poprawny import
+import { faStar as faRegStar } from '@fortawesome/free-regular-svg-icons';
 
 export const renderStars = (rating) => {
     const stars = [];
